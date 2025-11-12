@@ -1,21 +1,47 @@
+# Configuración del servidor
 server:
-  port: 8081
+  # Puerto donde se ejecutará este microservicio
+  # 8082 es diferente al Gateway (8080) y Keycloak (8081)
+  port: 8082
 
+# Configuración de Spring Boot
 spring:
+  # Nombre de la aplicación para identificación en logs y service discovery
   application:
     name: clientes-service
 
+  # Configuración de seguridad con OAuth2
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URL del emisor (issuer) de los tokens JWT (Keycloak)
+          # Spring validará que los tokens vengan de este emisor
+          issuer-uri: http://localhost:8081/realms/tpi-backend
+
+  # Configuración de la base de datos
   datasource:
+    # URL de conexión a la base de datos H2 en memoria
+    # 'mem:clientesdb' crea una base de datos en RAM llamada 'clientesdb'
     url: jdbc:h2:mem:clientesdb
+    # Driver JDBC para H2
     driver-class-name: org.h2.Driver
+    # Usuario por defecto de H2
     username: sa
+    # Password vacío (por defecto en H2)
     password:
 
+  # Configuración específica de H2
   h2:
     console:
+      # Habilita la consola web de H2 para administrar la BD
       enabled: true
 
+  # Configuración de JPA (Java Persistence API)
   jpa:
     hibernate:
-      ddl-auto: update
+      # Estrategia para crear el esquema de la base de datos automáticamente
+      # 'create' elimina y recrea las tablas en cada inicio (útil para desarrollo)
+      ddl-auto: create
+    # Muestra las consultas SQL generadas en la consola (útil para debugging)
     show-sql: true

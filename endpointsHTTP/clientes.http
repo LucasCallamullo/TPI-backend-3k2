@@ -33,3 +33,5 @@ GET http://localhost:8080/clientes
 
 ### Obtener cliente por ID (a través del Gateway)
 GET http://localhost:8080/clientes/1
+
+
