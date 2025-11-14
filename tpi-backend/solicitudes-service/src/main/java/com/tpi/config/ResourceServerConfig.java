@@ -22,44 +22,29 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class ResourceServerConfig {
     
-    // Define el filtro de seguridad principal que procesa todas las requests HTTP
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
-                // =============================================
-                // ✅ TEMPORAL: PERMITIR TODO para testing
-                // =============================================
-                // .requestMatchers("/**").permitAll()  // ← TEMPORAL!
+                // ✅ PERMITIR endpoints públicos de prueba
+                .requestMatchers("/api/v1/solicitudes/publico").permitAll()
+                .requestMatchers("/api/v1/solicitudes/health").permitAll()
                 
-                /* COMENTAR temporalmente toda la seguridad */
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/actuator/info").permitAll()
-                .requestMatchers("/api/v1/clientes/publico").permitAll()
-                .requestMatchers("/api/v1/clientes/sincronizar").permitAll()
-                .requestMatchers("/api/v1/clientes/hola-clientes").hasRole("CLIENTE")
-                .requestMatchers("/api/v1/clientes/admin-dashboard").hasRole("ADMIN")
-                .requestMatchers("/api/v1/clientes/operaciones").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .requestMatchers("/api/v1/clientes/mi-perfil").authenticated()
-                .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE")
+                // Los demás endpoints requieren autenticación
+                .requestMatchers("/api/v1/solicitudes/**").authenticated()
+                .requestMatchers("/api/v1/contenedores/**").authenticated()
+                
                 .anyRequest().authenticated()
-                
             )
-            //  DESHABILITAR seguridad OAuth2
             .oauth2ResourceServer(oauth2 -> 
                 oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-            )
-            ;
+            );
         
         return http.build();
     }
     
-    // =============================================
-    // CONVERSOR PERSONALIZADO JWT -> AUTHENTICATION
-    // =============================================
     // Bean personalizado para convertir un JWT en un token de autenticación de Spring Security
-    // NOTA: Este conversor extrae los roles del claim "realm_access" de Keycloak
     @Bean
     Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
         return new Converter<Jwt, AbstractAuthenticationToken>() {
@@ -84,29 +69,4 @@ public class ResourceServerConfig {
             }
         };
     }
-    
-    // =============================================
-    // CONFIGURACIÓN ADICIONAL PARA CORRECCIÓN DE TESTS
-    // =============================================
-    // COMENTARIO: Los siguientes métodos son SOLO para hacer pasar los tests
-    // En un ambiente real, Spring Boot crea automáticamente el JwtDecoder
-    // usando la propiedad: spring.security.oauth2.resourceserver.jwt.issuer-uri
-    
-    /*
-    // DESCOMENTAR ESTE MÉTODO SI LOS TESTS SIGUEN FALLANDO:
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        // Para tests, retornamos un JwtDecoder mockeado
-        // En producción, Spring Boot crea automáticamente este bean
-        // cuando la propiedad issuer-uri está configurada
-        return token -> {
-            // Retorna un JWT básico para pruebas
-            return Jwt.withTokenValue("mock-token")
-                    .header("alg", "none")
-                    .claim("sub", "test-user")
-                    .claim("realm_access", Map.of("roles", List.of("CLIENTE")))
-                    .build();
-        };
-    }
-    */
 }

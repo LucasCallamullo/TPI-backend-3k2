@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j  // Para logging con Lombok
+@Slf4j
 public class DataLoader implements CommandLineRunner {
 
     private final EstadoSolicitudRepository estadoSolicitudRepository;
@@ -37,7 +37,7 @@ public class DataLoader implements CommandLineRunner {
 
     @SuppressWarnings("null")
     private void cargarEstadosSolicitud() {
-        List<String> estados = Arrays.asList("Borrador", "Programada", "En Tránsito", "Entregada");
+        List<String> estados = Arrays.asList("BORRADOR", "PROGRAMADA", "EN_TRANSITO", "ENTREGADA");
         
         for (String nombre : estados) {
             if (estadoSolicitudRepository.findByNombre(nombre).isEmpty()) {
@@ -50,7 +50,7 @@ public class DataLoader implements CommandLineRunner {
 
     @SuppressWarnings("null")
     private void cargarEstadosContenedor() {
-        List<String> estados = Arrays.asList("Disponible", "En Tránsito", "Entregado", "En Deposito");
+        List<String> estados = Arrays.asList("DISPONIBLE", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO");
         
         for (String nombre : estados) {
             if (estadoContenedorRepository.findByNombre(nombre).isEmpty()) {

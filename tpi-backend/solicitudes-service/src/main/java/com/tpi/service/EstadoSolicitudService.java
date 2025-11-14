@@ -3,7 +3,10 @@ package com.tpi.service;
 import com.tpi.model.EstadoSolicitud;
 import com.tpi.repository.EstadoSolicitudRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +26,12 @@ public class EstadoSolicitudService {
         return estadoSolicitudRepository.findById(id);
     }
 
-    public Optional<EstadoSolicitud> findByNombre(String nombre) {
-        return estadoSolicitudRepository.findByNombre(nombre);
+    public EstadoSolicitud findByNombre(String nombre) {
+        return estadoSolicitudRepository.findByNombre(nombre)
+                                    .orElseThrow(() -> new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Estado inválido: " + nombre
+                                    ));
     }
 
     @SuppressWarnings("null")

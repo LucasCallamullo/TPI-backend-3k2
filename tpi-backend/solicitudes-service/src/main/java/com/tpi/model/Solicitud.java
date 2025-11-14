@@ -39,7 +39,7 @@ public class Solicitud {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estado_id")
-    private EstadoSolicitud estado;
+    private EstadoSolicitud estado;    // "BORRADOR", "PROGRAMADA", "EN_TRANSITO", "ENTREGADA"
     
     private LocalDateTime fechaCreacion;
     

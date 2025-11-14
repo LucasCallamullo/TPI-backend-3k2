@@ -1,0 +1,52 @@
+# =============================================
+# CONFIGURACIÓN EXCLUSIVA PARA TESTS
+# =============================================
+spring:
+  # Configuración de seguridad para tests
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URL de Keycloak para tests
+          issuer-uri: http://localhost:8081/realms/tpi-backend
+  main:
+    allow-bean-definition-overriding: true
+
+  # Configuración de base de datos para tests
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+# Desactivar seguridad en tests
+security:
+  basic:
+    enabled: false
+
+# Configuración del servidor para tests
+server:
+  port: 0  # Puerto aleatorio
+
+# Logging para tests
+logging:
+  level:
+    com.tpi.solicitudes: WARN
+    org.springframework.security: WARN
+
+# Configuración de Actuator para tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

@@ -1,0 +1,52 @@
+# docker-compose.yml
+version: '3.9'
+
+services:
+  # ✅ KEYCLOAK en la MISMA red
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: keycloak
+    command: start-dev
+    ports:
+      - "8081:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin123
+      # ✅ Configuración SIMPLE que funciona
+      - KC_HOSTNAME=192.168.100.124
+      - KC_HOSTNAME_PORT=8081
+      - KC_HOSTNAME_STRICT=false
+      - KC_PROXY=edge
+      - KC_PROXY_HEADERS=xforwarded
+    networks:
+      - tpi-backend-network
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+
+  # ✅ MICROSERVICIOS (misma red)
+  gateway-service:
+    build: ./gateway
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    networks:
+      - tpi-backend-network
+
+  clientes-service:
+    build: ./clientes-service
+    container_name: clientes-service
+    networks:
+      - tpi-backend-network
+
+  solicitudes-service:
+    build: ./solicitudes-service
+    container_name: solicitudes-service
+    networks:
+      - tpi-backend-network
+
+volumes:
+  keycloak_data:
+
+networks:
+  tpi-backend-network:
+    driver: bridge

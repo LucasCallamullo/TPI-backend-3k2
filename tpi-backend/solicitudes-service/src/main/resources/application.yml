@@ -1,16 +1,16 @@
 spring:
   application:
-    name: clientes-service
+    name: solicitudes-service
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://192.168.100.124:8081/realms/tpi-backend
           # issuer-uri: http://keycloak:8080/realms/tpi-backend
-          # issuer-uri: http://localhost:8081/realms/tpi-backend
           # issuer-uri: http://host.docker.internal:8081/realms/tpi-backend
+          # issuer-uri: http://localhost:8081/realms/tpi-backend
   datasource:
-    url: jdbc:h2:mem:clientesdb
+    url: jdbc:h2:mem:solicitudesdb
     username: sa
     password:
   jpa:
@@ -19,14 +19,7 @@ spring:
     show-sql: true
 
 server:
-  port: 8082
-
-# CONFIGURACIÓN SWAGGER CORREGIDA
-springdoc:
-  api-docs:
-    path: /v3/api-docs  # Este endpoint estará en http://clientes-service:8082/v3/api-docs
-  swagger-ui:
-    enabled: false  # Correcto - deshabilitar UI individual
+  port: 8083
 
 management:
   endpoints:

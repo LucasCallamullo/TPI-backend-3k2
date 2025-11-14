@@ -23,7 +23,7 @@ public class Contenedor {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estado_contenedor_id")
-    private EstadoContenedor estado;
+    private EstadoContenedor estado;    // "DISPONIBLE", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO"
     
     // NO tiene relación directa con Cliente aquí
     // La relación es a través de Solicitud
