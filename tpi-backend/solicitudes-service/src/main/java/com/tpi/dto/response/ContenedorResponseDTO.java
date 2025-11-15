@@ -7,9 +7,9 @@ public record ContenedorResponseDTO(
     Double peso,
     Double volumen,
     String identificacionUnica,
-    String estado 
+    EstadoContenedorInfoDTO estado 
 ) {
-    // Constructor estático en el DTO
+    // Constructor cuando ya tienes el estado cargado (EAGER o JOIN)
     public static ContenedorResponseDTO fromEntity(Contenedor contenedor) {
         if (contenedor == null) {
             return null;
@@ -19,7 +19,24 @@ public record ContenedorResponseDTO(
             contenedor.getPeso(),
             contenedor.getVolumen(),
             contenedor.getIdentificacionUnica(),
-            contenedor.getEstado() != null ? contenedor.getEstado().getNombre() : "SIN_ESTADO"
+            new EstadoContenedorInfoDTO(
+                contenedor.getEstado().getId(),
+                contenedor.getEstado().getNombre()
+            )
+        );
+    }
+
+    // Constructor cuando pasas el estado explícitamente (para casos como actualizarEstado)
+    public static ContenedorResponseDTO fromEntity(Contenedor contenedor, EstadoContenedorInfoDTO estado) {
+        if (contenedor == null) {
+            return null;
+        }
+        return new ContenedorResponseDTO(
+            contenedor.getId(),
+            contenedor.getPeso(),
+            contenedor.getVolumen(),
+            contenedor.getIdentificacionUnica(),
+            estado
         );
     }
 }

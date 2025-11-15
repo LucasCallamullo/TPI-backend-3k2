@@ -7,9 +7,11 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class SwaggerConfig {
+    
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
@@ -22,6 +24,12 @@ public class SwaggerConfig {
                         .email("lucascallamullo@hotmail.com"))
                     .license(new License()
                         .name("Apache 2.0")
-                        .url("http://springdoc.org")));
+                        .url("http://springdoc.org")))
+                .addServersItem(new Server()
+                    .url("http://localhost:8080/clientes-service")  // ← URL del Gateway
+                    .description("API Gateway"))
+                .addServersItem(new Server()
+                    .url("http://localhost:8082")  // ← URL directa (backup)
+                    .description("Direct access"));
     }
 }

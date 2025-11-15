@@ -1,0 +1,118 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        # ==============================================
+        #  Clientes URL
+        # ==============================================
+        # Ruta 1: Para /clientes SOLO
+        - id: clientes-service-root
+          uri: http://localhost:8082
+          predicates:
+            - Path=/clientes
+          filters:
+            - RewritePath=/clientes, /api/v1/clientes
+
+        # Ruta 2: Para /clientes/lo-que-sea  
+        - id: clientes-service-segment
+          uri: http://localhost:8082
+          predicates:
+            - Path=/clientes/**
+          filters:
+            - RewritePath=/clientes/(?<segment>.*), /api/v1/clientes/${segment}
+
+        # =========================================================
+        # SWAGGER CLIENTES
+        # =========================================================
+        - id: clientes-service-swagger-config
+          uri: http://localhost:8082
+          predicates:
+            - Path=/clientes-service/v3/api-docs/swagger-config
+          filters:
+            - RewritePath=/clientes-service/v3/api-docs/swagger-config, /v3/api-docs/swagger-config
+
+        - id: clientes-service-swagger-catch-all
+          uri: http://localhost:8082
+          predicates:
+            - Path=/clientes-service/**
+          filters:
+            - RewritePath=/clientes-service/(?<segment>.*), /$\{segment}
+
+        # ==============================================
+        #  Solicitudes URL
+        # ==============================================
+        - id: solicitudes-service-root
+          uri: http://localhost:8083
+          predicates:
+            - Path=/solicitudes
+          filters:
+            - RewritePath=/solicitudes, /api/v1/solicitudes
+
+        - id: solicitudes-service-segment
+          uri: http://localhost:8083
+          predicates:
+            - Path=/solicitudes/**
+          filters:
+            - RewritePath=/solicitudes/(?<segment>.*), /api/v1/solicitudes/${segment}
+
+        # =========================================================
+        # SWAGGER SOLICITUDES
+        # =========================================================
+        - id: solicitudes-service-swagger-config
+          uri: http://localhost:8083
+          predicates:
+            - Path=/solicitudes-service/v3/api-docs/swagger-config
+          filters:
+            - RewritePath=/solicitudes-service/v3/api-docs/swagger-config, /v3/api-docs/swagger-config
+
+        - id: solicitudes-service-swagger-catch-all
+          uri: http://localhost:8083
+          predicates:
+            - Path=/solicitudes-service/**
+          filters:
+            - RewritePath=/solicitudes-service/(?<segment>.*), /$\{segment}
+
+
+
+        # Keycloak - Desarrollo
+        - id: keycloak
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth/(?<segment>.*), /${segment}
+
+
+        # ver despues para GATEWAY centralizando swagger ui
+
+        # RUTA CRÍTICA: Swagger UI del Gateway (centralizado)
+        # - id: gateway-swagger-ui
+        #  uri: http://localhost:8080  # ← El MISMO Gateway
+        #  predicates:
+        #    - Path=/swagger-ui.html
+        #  filters:
+        #    # No necesita RewritePath, se sirve a sí mismo
+
+        # Ruta para los recursos estáticos de Swagger UI del Gateway
+        # - id: gateway-swagger-resources
+        #  uri: http://localhost:8080
+        #  predicates:
+        #    - Path=/swagger-ui/**
+        #  filters:
+        #    # No necesita RewritePath
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+    urls:
+      - url: /solicitudes-service/v3/api-docs
+        name: Solicitudes Service
+      - url: /clientes-service/v3/api-docs
+        name: Clientes Service
+      

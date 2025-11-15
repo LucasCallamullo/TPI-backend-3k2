@@ -1,21 +1,77 @@
 spring:
+  # profiles:
+  #  active: dev
+
   cloud:
     gateway:
       routes:
-        - id: clientes-service
+        # Ruta 1: Para /clientes SOLO (sin segmento)
+        - id: clientes-service-root
+          uri: http://clientes-service:8082
+          predicates:
+            - Path=/clientes
+          filters:
+            - RewritePath=/clientes, /api/v1/clientes
+
+        # Ruta 2: Para /clientes/lo-que-sea (con segmento)
+        - id: clientes-service-segment
           uri: http://clientes-service:8082
           predicates:
             - Path=/clientes/**
           filters:
-            - RewritePath=/clientes(?<segment>.*), /api/v1/clientes${segment}
-            # - RewritePath=/clientes/(?<segment>.*), /api/v1/clientes${segment}
+            - RewritePath=/clientes/(?<segment>.*), /api/v1/clientes/${segment}
 
-        - id: solicitudes-service
+        # =========================================================
+        # SWAGGER CLIENTES
+        # =========================================================
+        - id: clientes-service-swagger-config
+          uri: http://clientes-service:8082
+          predicates:
+            - Path=/clientes-service/v3/api-docs/swagger-config
+          filters:
+            - RewritePath=/clientes-service/v3/api-docs/swagger-config, /v3/api-docs/swagger-config
+
+        - id: clientes-service-swagger-catch-all
+          uri: http://clientes-service:8082
+          predicates:
+            - Path=/clientes-service/**
+          filters:
+            - RewritePath=/clientes-service/(?<segment>.*), /$\{segment}
+
+        # ==============================================
+        #  Solicitudes URL
+        # ==============================================
+        - id: solicitudes-service-root
+          uri: http://solicitudes-service:8083
+          predicates:
+            - Path=/solicitudes
+          filters:
+            - RewritePath=/solicitudes, /api/v1/solicitudes
+
+        - id: solicitudes-service-segment
           uri: http://solicitudes-service:8083
           predicates:
             - Path=/solicitudes/**
           filters:
-            - RewritePath=/solicitudes(?<segment>.*), /api/v1/solicitudes${segment}
+            - RewritePath=/solicitudes/(?<segment>.*), /api/v1/solicitudes/${segment}
+
+        # =========================================================
+        # SWAGGER SOLICITUDES
+        # =========================================================
+        - id: solicitudes-service-swagger-config
+          uri: http://solicitudes-service:8083
+          predicates:
+            - Path=/solicitudes-service/v3/api-docs/swagger-config
+          filters:
+            - RewritePath=/solicitudes-service/v3/api-docs/swagger-config, /v3/api-docs/swagger-config
+
+        - id: solicitudes-service-swagger-catch-all
+          uri: http://solicitudes-service:8083
+          predicates:
+            - Path=/solicitudes-service/**
+          filters:
+            - RewritePath=/solicitudes-service/(?<segment>.*), /$\{segment}
+
 
         - id: keycloak
           uri: http://keycloak:8080
@@ -24,21 +80,17 @@ spring:
           filters:
             - RewritePath=/auth/(?<segment>.*), /${segment}
 
-        # Ruta específica para Swagger de clientes-service - CORREGIDA
-        # En el Gateway - CORREGIR ESTA RUTA
-        - id: clientes-service-api-docs
-          uri: http://clientes-service:8082
-          # uri: http://localhost:8082
-          predicates:
-            - Path=/clientess-service/v3/api-docs  # ← Coincide con "clientes-service"
-          filters:
-            - RewritePath=/clientess-service/v3/api-docs, /v3/api-docs
 
-        # Ruta específica para Swagger de clientes-service - CORREGIDA
-        - id: solicitudes-service-api-docs
-          uri: http://solicitudes-service:8083
-          predicates:
-            - Path=/solicitudes-service/v3/api-docs
-          filters:
-            - RewritePath=/solicitudes-service/v3/api-docs, /v3/api-docs
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
 
+    urls:
+      - url: /solicitudes-service/v3/api-docs
+        name: Solicitudes Service
+      - url: /clientes-service/v3/api-docs
+        name: Clientes Service

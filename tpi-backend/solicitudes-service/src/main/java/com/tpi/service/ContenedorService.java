@@ -2,6 +2,9 @@ package com.tpi.service;
 
 import com.tpi.dto.request.ContenedorRequestDTO;
 import com.tpi.dto.response.ContenedorResponseDTO;
+import com.tpi.dto.response.EstadoContenedorInfoDTO;
+import com.tpi.exception.EntidadDuplicadaException;
+import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.model.Contenedor;
 import com.tpi.model.EstadoContenedor;
 import com.tpi.repository.ContenedorRepository;
@@ -75,9 +78,18 @@ public class ContenedorService {
         contenedor.setEstado(estado);
         Contenedor updated = contenedorRepository.save(contenedor);
         
-        return ContenedorResponseDTO.fromEntity(updated);
+        // Crea el DTO del estado explícitamente
+        EstadoContenedorInfoDTO estadoDTO = new EstadoContenedorInfoDTO(
+            estado.getId(),
+            estado.getNombre()
+        );
+        
+        return ContenedorResponseDTO.fromEntity(updated, estadoDTO);
     }
 
+    /**
+     * Metodos para reutilizar en otros a partir de la misma clase 
+     */
     public Optional<Contenedor> findByIdentificacionUnica(String identificacionUnica) {
         return contenedorRepository.findByIdentificacionUnica(identificacionUnica);
     }
@@ -86,30 +98,74 @@ public class ContenedorService {
         return contenedorRepository.existsByIdentificacionUnica(identificacionUnica);
     }
 
-    @SuppressWarnings("null")
-    public Contenedor crearContenedor(ContenedorRequestDTO request) {
-        // Validar que la identificación única no exista
-        if (contenedorRepository.existsByIdentificacionUnica(request.identificacionUnica())) {
-            throw new ResponseStatusException(
-                HttpStatus.CONFLICT, 
-                "Ya existe un contenedor con la identificación: " + request.identificacionUnica()
+    /**
+     * Para crear contenedor y dar un response apropiado se llama desde POST especifico
+     * @param requestDTO
+     * @return
+     */
+    public ContenedorResponseDTO crearContenedor(ContenedorRequestDTO requestDTO) {
+        // Validar que el estado exista
+        EstadoContenedor estado = estadoContenedorService.findByNombre("DISPONIBLE")
+            .orElseThrow(() -> new EntidadNotFoundException(
+                "Estado Contenedor", 
+                "Estado DISPONIBLE no configurado en el sistema"
+            ));
+
+        // Validar duplicado usando excepción genérica
+        if (existsByIdentificacionUnica(requestDTO.identificacionUnica())) {
+            throw new EntidadDuplicadaException(
+                "Contenedor", 
+                "identificación única", 
+                requestDTO.identificacionUnica()
             );
         }
         
-        EstadoContenedor estadoDisponible = estadoContenedorService.findByNombre("DISPONIBLE")
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Estado 'DISPONIBLE' no configurado en el sistema"
-            ));
+        Contenedor contenedor = new Contenedor();
+        contenedor.setPeso(requestDTO.peso());
+        contenedor.setVolumen(requestDTO.volumen());
+        contenedor.setIdentificacionUnica(requestDTO.identificacionUnica());
+        contenedor.setEstado(estado);
         
-        Contenedor contenedor = Contenedor.builder()
-            .peso(request.peso())
-            .volumen(request.volumen())
-            .identificacionUnica(request.identificacionUnica())
-            .estado(estadoDisponible)
-            .build();
-            
-        return contenedorRepository.save(contenedor);
+        Contenedor contenedorGuardado = contenedorRepository.save(contenedor);
+        
+        EstadoContenedorInfoDTO estadoDTO = new EstadoContenedorInfoDTO(
+            estado.getId(),
+            estado.getNombre()
+        );
+        
+        return ContenedorResponseDTO.fromEntity(contenedorGuardado, estadoDTO);
+    }
+
+    /**
+     * Para crear una entidad y devolverla se llama desde POST de solicitudes que requiere crear un contenedor
+     * 
+     * @param requestDTO
+     * @return
+     */
+    public Contenedor crearContenedorEntidad(ContenedorRequestDTO requestDTO) {
+        // Validar que el estado exista
+        EstadoContenedor estado = estadoContenedorService.findByNombre("DISPONIBLE")
+            .orElseThrow(() -> new EntidadNotFoundException(
+                "Estado Contenedor", 
+                "Estado DISPONIBLE no configurado en el sistema"
+            ));
+
+        // Validar duplicado usando excepción genérica
+        if (existsByIdentificacionUnica(requestDTO.identificacionUnica())) {
+            throw new EntidadDuplicadaException(
+                "Contenedor", 
+                "identificación única", 
+                requestDTO.identificacionUnica()
+            );
+        }
+        
+        Contenedor contenedor = new Contenedor();
+        contenedor.setPeso(requestDTO.peso());
+        contenedor.setVolumen(requestDTO.volumen());
+        contenedor.setIdentificacionUnica(requestDTO.identificacionUnica());
+        contenedor.setEstado(estado);
+        contenedorRepository.save(contenedor);
+        return contenedor;
     }
 
     @SuppressWarnings("null")

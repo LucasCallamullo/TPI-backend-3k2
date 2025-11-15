@@ -105,7 +105,7 @@ public class SolicitudService {
 
 
 
-    
+    @SuppressWarnings("null")
     public SolicitudResponseDTO crearSolicitudCompleta(CrearSolicitudCompletaRequestDTO request) {
     
         // 1. Crear ubicación ORIGEN en ms-logistica (con JWT)
@@ -115,7 +115,7 @@ public class SolicitudService {
         Long destinoId = crearUbicacionEnLogistica(request.destino());
         
         // 3. Crear contenedor NUEVO (según requerimiento)
-        Contenedor contenedorGuardado = contenedorService.crearContenedor(request.contenedor());
+        Contenedor contenedorGuardado = contenedorService.crearContenedorEntidad(request.contenedor());
         
         // 4. Obtener estado inicial de solicitud
         EstadoSolicitud estadoBorrador = estadoSolicitudService.findByNombre("BORRADOR");
@@ -134,7 +134,7 @@ public class SolicitudService {
             .tiempoEstimado(0)
             .build();
             
-        @SuppressWarnings("null")
+        
         Solicitud saved = solicitudRepository.save(solicitud);
         
         // 7. Retornar usando el constructor estático del DTO

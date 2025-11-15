@@ -1,0 +1,50 @@
+
+
+spring:
+  application:
+    name: solicitudes-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Para desarrollo local - Keycloak en localhost
+          # issuer-uri: http://localhost:8081/realms/tpi-backend
+  datasource:
+    url: jdbc:h2:mem:solicitudesdb
+    username: sa
+    password:
+    # Opcional: Para desarrollo podrías usar una BD en archivo en lugar de memoria
+    # url: jdbc:h2:file:./dev-clientes-db;DB_CLOSE_ON_EXIT=FALSE
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # En dev puedes usar create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true  # SQL formateado en logs
+  sql:
+    init:
+      platform: h2  # Para cargar data de prueba si necesitas
+
+server:
+  port: 8083
+  # servlet:
+  #  context-path: /api/v1/clientes  # Opcional, si quieres un context path específico
+  # context-path: / 
+
+# CONFIGURACIÓN SWAGGER PARA DESARROLLO
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method    # ✅ VALORES CORRECTOS
+    tags-sorter: alpha           # ✅ "alpha" SÍ es válido para tags-sorter
+
+    # Configuración para cuando se accede a través del Gateway
+    url: /solicitudes-service/v3/api-docs
+    config-url: /solicitudes-service/v3/api-docs/swagger-config
+
+

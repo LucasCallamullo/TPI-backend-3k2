@@ -44,6 +44,12 @@ services:
     networks:
       - tpi-backend-network
 
+  logistica-service:
+    build: ./logistica-service
+    container_name: logistica-service
+    networks:
+      - tpi-backend-network
+
 volumes:
   keycloak_data:
 

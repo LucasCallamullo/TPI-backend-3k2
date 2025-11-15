@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: clientes-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Para desarrollo local - Keycloak en localhost
+          # issuer-uri: http://localhost:8081/realms/tpi-backend
+  datasource:
+    url: jdbc:h2:mem:clientesdb
+    username: sa
+    password:
+    # Opcional: Para desarrollo podrías usar una BD en archivo en lugar de memoria
+    # url: jdbc:h2:file:./dev-clientes-db;DB_CLOSE_ON_EXIT=FALSE
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # En dev puedes usar create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true  # SQL formateado en logs
+  sql:
+    init:
+      platform: h2  # Para cargar data de prueba si necesitas
+
+# 8080: Gateway    -  8081:Keycloack    -  8082:  ms-clientes    -  8083:  ms-solicitudes    -  8084: ms-logistica
+server:
+  port: 8082
+  # servlet:
+  #  context-path: /api/v1/clientes  # Opcional, si quieres un context path específico
+  # context-path: / 
+
+# CONFIGURACIÓN SWAGGER PARA DESARROLLO
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method    # ✅ VALORES CORRECTOS
+    tags-sorter: alpha           # ✅ "alpha" SÍ es válido para tags-sorter
+
+
+    # Configuración para cuando se accede a través del Gateway
+    url: /clientes-service/v3/api-docs
+    config-url: /clientes-service/v3/api-docs/swagger-config
+    # Para desarrollo directo también funciona
+    # urls:
+    #  - url: /v3/api-docs
+    #    name: Direct
+    #  - url: /clientes-service/v3/api-docs  
+    #    name: Gateway
+    
+
+# Configuración específica para desarrollo
+logging:
+  level:
+    com.tpi: DEBUG  # Logs de tu paquete
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

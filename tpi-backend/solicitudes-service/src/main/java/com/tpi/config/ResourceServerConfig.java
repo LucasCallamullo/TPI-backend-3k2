@@ -27,6 +27,19 @@ public class ResourceServerConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/**").permitAll()  // ← TEMPORAL!
+
+
+                /* COMENTAR temporalmente toda la seguridad 
+
+                .requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**", 
+                    "/v3/api-docs/**",
+                    "/swagger-resources/**",
+                    "/webjars/**"
+                ).permitAll()
+
                 // ✅ PERMITIR endpoints públicos de prueba
                 .requestMatchers("/api/v1/solicitudes/publico").permitAll()
                 .requestMatchers("/api/v1/solicitudes/health").permitAll()
@@ -36,6 +49,7 @@ public class ResourceServerConfig {
                 .requestMatchers("/api/v1/contenedores/**").authenticated()
                 
                 .anyRequest().authenticated()
+                */
             )
             .oauth2ResourceServer(oauth2 -> 
                 oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

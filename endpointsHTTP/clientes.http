@@ -35,3 +35,14 @@ GET http://localhost:8080/clientes
 GET http://localhost:8080/clientes/1
 
 
+
+###
+POST http://localhost:8081/realms/tpi-backend/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password
+&client_id=tpi-backend-client
+&username=cliente01
+&password=1234
+&scope=openid
+

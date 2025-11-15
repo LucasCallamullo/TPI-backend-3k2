@@ -29,22 +29,33 @@ public class ResourceServerConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 // =============================================
-                // ✅ TEMPORAL: PERMITIR TODO para testing
+                // ✅ TEMPORAL: PERMITIR SIEMPRE
                 // =============================================
                 // .requestMatchers("/**").permitAll()  // ← TEMPORAL!
+
+
+                /* COMENTAR temporalmente toda la seguridad  */
+                // Permitir acceso público a Swagger/OpenAPI
+                .requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**", 
+                    "/v3/api-docs/**",
+                    "/swagger-resources/**",
+                    "/webjars/**"
+                ).permitAll()
                 
-                /* COMENTAR temporalmente toda la seguridad */
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/info").permitAll()
                 .requestMatchers("/api/v1/clientes/publico").permitAll()
                 .requestMatchers("/api/v1/clientes/sincronizar").permitAll()
+
                 .requestMatchers("/api/v1/clientes/hola-clientes").hasRole("CLIENTE")
-                .requestMatchers("/api/v1/clientes/admin-dashboard").hasRole("ADMIN")
+                .requestMatchers("/api/v1/clientes/hola-admin").hasRole("ADMIN")
                 .requestMatchers("/api/v1/clientes/operaciones").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
                 .requestMatchers("/api/v1/clientes/mi-perfil").authenticated()
-                .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE")
-                .anyRequest().authenticated()
-                
+                // .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE")
+
+                .anyRequest().authenticated() 
             )
             //  DESHABILITAR seguridad OAuth2
             .oauth2ResourceServer(oauth2 -> 
@@ -68,6 +79,9 @@ public class ResourceServerConfig {
             public AbstractAuthenticationToken convert(Jwt jwt) {
                 // Extrae la información de roles del claim "realm_access" del JWT
                 Map<String, List<String>> realmAccess = jwt.getClaim("realm_access");
+
+                // ✅ DEBUG: Ver los roles originales del token
+                System.out.println("Roles del token: " + realmAccess.get("roles"));
                 
                 // Convierte los roles de Keycloak en autoridades de Spring Security
                 List<GrantedAuthority> authorities = realmAccess.get("roles")

@@ -51,4 +51,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(new ErrorResponse("MICROSERVICIO_NO_DISPONIBLE", ex.getMessage(), 503));
     }
+
+    @ExceptionHandler(EntidadDuplicadaException.class)
+    public ResponseEntity<ErrorResponse> handleEntidadDuplicada(EntidadDuplicadaException ex) {
+        log.warn("Entidad duplicada: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            "ENTIDAD_DUPLICADA",
+            ex.getMessage(),
+            HttpStatus.CONFLICT.value()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
 }

@@ -1,4 +1,7 @@
 spring:
+  # profiles:
+  #  active: dev
+
   application:
     name: solicitudes-service
   security:
@@ -30,3 +33,18 @@ management:
 h2:
   console:
     enabled: true
+
+# CONFIGURACIÓN SWAGGER PARA DESARROLLO
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method    # ✅ VALORES CORRECTOS
+    tags-sorter: alpha           # ✅ "alpha" SÍ es válido para tags-sorter
+
+    # Configuración para cuando se accede a través del Gateway
+    url: /solicitudes-service/v3/api-docs
+    config-url: /solicitudes-service/v3/api-docs/swagger-config
