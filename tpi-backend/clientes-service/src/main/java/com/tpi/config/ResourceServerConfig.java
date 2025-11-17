@@ -29,10 +29,9 @@ public class ResourceServerConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 // =============================================
-                // ✅ TEMPORAL: PERMITIR SIEMPRE
+                // TEMPORAL: PERMITIR SIEMPRE para pruebas
                 // =============================================
                 // .requestMatchers("/**").permitAll()  // ← TEMPORAL!
-
 
                 /* COMENTAR temporalmente toda la seguridad  */
                 // Permitir acceso público a Swagger/OpenAPI
@@ -43,17 +42,35 @@ public class ResourceServerConfig {
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
-                
+
+                // endpoints de pruebas ver si esta actuator en el pom.xml
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/info").permitAll()
+                
+                // Endpoints PÚBLICOS (sin autenticación)
                 .requestMatchers("/api/v1/clientes/publico").permitAll()
+
+                // Endpoints con ROL CLIENTE
+                .requestMatchers("/api/v1/clientes/hola-clientes").hasRole("CLIENTE")
+
+                // Endpoints con ROL ADMIN
+                .requestMatchers("/api/v1/clientes/hola-admin").hasRole("ADMIN")
+
+                // Endpoints con MÚLTIPLES ROLES
+                .requestMatchers("/api/v1/clientes/multi-rol").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+
+                // Endpoints AUTENTICADOS (cualquier usuario logueado)
+                .requestMatchers("/api/v1/clientes/mi-perfil").authenticated()
+
+                // Endpoints PÚBLICOS (sin autenticación) sincroniza kleycloackId en la base de datos de clientes
                 .requestMatchers("/api/v1/clientes/sincronizar").permitAll()
 
-                .requestMatchers("/api/v1/clientes/hola-clientes").hasRole("CLIENTE")
-                .requestMatchers("/api/v1/clientes/hola-admin").hasRole("ADMIN")
-                .requestMatchers("/api/v1/clientes/operaciones").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .requestMatchers("/api/v1/clientes/mi-perfil").authenticated()
-                // .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE")
+                // Endpoints para CLIENTE (usuario autenticado)
+                .requestMatchers("/api/v1/clientes/me").hasRole("CLIENTE")
+
+                // Endpoints para ADMIN (solo administradores)
+                .requestMatchers("/api/v1/clientes").hasRole("ADMIN")
+                .requestMatchers("/api/v1/clientes/{id}").hasRole("ADMIN")
 
                 .anyRequest().authenticated() 
             )

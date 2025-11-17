@@ -1,0 +1,14 @@
+spring:
+  # profiles:
+  #  active: dev
+  application:
+    name: routing-service  # ← Nombre más descriptivo
+
+# 8080: Gateway    -  8081:Keycloack    -  8082:  ms-clientes    -  8083:  ms-solicitudes    -  8084: ms-logistica
+# 8088: osrm
+server:
+  port: 8088
+
+# Configuración para conectar al servicio OSRM
+osrm:
+  base-url: http://routing-osrm:5000  # ← Dentro de Docker

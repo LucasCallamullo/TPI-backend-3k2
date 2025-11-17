@@ -3,8 +3,8 @@ package com.tpi.service;
 import com.tpi.dto.request.ContenedorRequestDTO;
 import com.tpi.dto.response.ContenedorResponseDTO;
 import com.tpi.dto.response.EstadoContenedorInfoDTO;
+import com.tpi.exception.ContenedorNoDisponibleException;
 import com.tpi.exception.EntidadDuplicadaException;
-import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.model.Contenedor;
 import com.tpi.model.EstadoContenedor;
 import com.tpi.repository.ContenedorRepository;
@@ -69,11 +69,7 @@ public class ContenedorService {
                         "Contenedor no encontrado con ID: " + id
                 ));
         
-        EstadoContenedor estado = estadoContenedorService.findByNombre(nombreEstado)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Estado de contenedor inválido: " + nombreEstado
-                ));
+        EstadoContenedor estado = estadoContenedorService.findByNombre(nombreEstado);
         
         contenedor.setEstado(estado);
         Contenedor updated = contenedorRepository.save(contenedor);
@@ -105,11 +101,7 @@ public class ContenedorService {
      */
     public ContenedorResponseDTO crearContenedor(ContenedorRequestDTO requestDTO) {
         // Validar que el estado exista
-        EstadoContenedor estado = estadoContenedorService.findByNombre("DISPONIBLE")
-            .orElseThrow(() -> new EntidadNotFoundException(
-                "Estado Contenedor", 
-                "Estado DISPONIBLE no configurado en el sistema"
-            ));
+        EstadoContenedor estado = estadoContenedorService.findByNombre("DISPONIBLE");
 
         // Validar duplicado usando excepción genérica
         if (existsByIdentificacionUnica(requestDTO.identificacionUnica())) {
@@ -137,34 +129,40 @@ public class ContenedorService {
     }
 
     /**
-     * Para crear una entidad y devolverla se llama desde POST de solicitudes que requiere crear un contenedor
-     * 
-     * @param requestDTO
-     * @return
+     * Obtiene o crea un contenedor como entidad
      */
-    public Contenedor crearContenedorEntidad(ContenedorRequestDTO requestDTO) {
-        // Validar que el estado exista
-        EstadoContenedor estado = estadoContenedorService.findByNombre("DISPONIBLE")
-            .orElseThrow(() -> new EntidadNotFoundException(
-                "Estado Contenedor", 
-                "Estado DISPONIBLE no configurado en el sistema"
-            ));
+    public Contenedor getOrCreate(ContenedorRequestDTO requestDTO, String keycloakId) {
+        EstadoContenedor estadoDisponible = estadoContenedorService.findByNombre("DISPONIBLE");
 
-        // Validar duplicado usando excepción genérica
-        if (existsByIdentificacionUnica(requestDTO.identificacionUnica())) {
-            throw new EntidadDuplicadaException(
-                "Contenedor", 
-                "identificación única", 
-                requestDTO.identificacionUnica()
-            );
+        // Buscar o crear contenedor
+        Contenedor contenedor = findByIdentificacionUnica(requestDTO.identificacionUnica())
+            .orElseGet(() -> crearContenedorDisponible(requestDTO, estadoDisponible));
+
+        // Validar disponibilidad
+        if (!contenedor.getEstado().getNombre().equals(estadoDisponible.getNombre())) {
+            throw new ContenedorNoDisponibleException("El contenedor no está disponible");
         }
-        
+
+        // Asignar al cliente
+        return asignarACliente(contenedor, keycloakId);
+    }
+
+    private Contenedor crearContenedorDisponible(ContenedorRequestDTO requestDTO, EstadoContenedor estado) {
         Contenedor contenedor = new Contenedor();
+        contenedor.setIdentificacionUnica(requestDTO.identificacionUnica());
         contenedor.setPeso(requestDTO.peso());
         contenedor.setVolumen(requestDTO.volumen());
-        contenedor.setIdentificacionUnica(requestDTO.identificacionUnica());
         contenedor.setEstado(estado);
-        contenedorRepository.save(contenedor);
+        contenedor.setClienteId(null); // Sin dueño inicialmente
+        
+        return this.save(contenedor);
+    }
+
+    private Contenedor asignarACliente(Contenedor contenedor, String keycloakId) {
+        if (contenedor.getClienteId() == null || !contenedor.getClienteId().equals(keycloakId)) {
+            contenedor.setClienteId(keycloakId);
+            return this.save(contenedor);
+        }
         return contenedor;
     }
 

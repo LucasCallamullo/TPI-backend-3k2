@@ -1,12 +1,12 @@
 package com.tpi.service;
 
+import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.model.EstadoContenedor;
 import com.tpi.repository.EstadoContenedorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,12 +19,20 @@ public class EstadoContenedorService {
     }
 
     @SuppressWarnings("null")
-    public Optional<EstadoContenedor> findById(Long id) {
-        return estadoContenedorRepository.findById(id);
+    public EstadoContenedor findById(Long id) {
+        return estadoContenedorRepository.findById(id)
+            .orElseThrow(() -> new EntidadNotFoundException(
+                "EstadoSolicitud", 
+                "No se encontró el estado con nombre: " + id
+            ));
     }
 
-    public Optional<EstadoContenedor> findByNombre(String nombre) {
-        return estadoContenedorRepository.findByNombre(nombre);
+    public EstadoContenedor findByNombre(String nombre) {
+        return estadoContenedorRepository.findByNombre(nombre)
+            .orElseThrow(() -> new EntidadNotFoundException(
+                "EstadoSolicitud", 
+                "No se encontró el estado con nombre: " + nombre
+            ));
     }
 
     @SuppressWarnings("null")

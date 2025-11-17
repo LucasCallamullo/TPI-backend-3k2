@@ -37,6 +37,12 @@ public class SincronizarClienteRequest {
         example = "+5491123456789"
     )
     private String telefono;
+
+    @Schema(
+        description = "Dirección del cliente",
+        example = "Av. Siempre Viva 123"
+    )
+    private String direccion;
     
     // Constructor vacío para Jackson
     public SincronizarClienteRequest() {}

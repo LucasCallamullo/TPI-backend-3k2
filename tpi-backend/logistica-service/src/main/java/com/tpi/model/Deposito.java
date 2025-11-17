@@ -15,7 +15,9 @@ public class Deposito {
     private Long id;
 
     private String nombre;
-    private Long ubicacionId;
     private Double costoEstadiaPorDia;
 
+    @ManyToOne
+    @JoinColumn(name = "ubicacion_id")
+    private Ubicacion ubicacion;
 }

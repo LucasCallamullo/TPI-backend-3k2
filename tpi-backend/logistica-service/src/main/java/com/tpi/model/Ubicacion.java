@@ -2,6 +2,7 @@ package com.tpi.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 @Data
 @Entity
 @Table(name = "ubicacion")
@@ -18,7 +19,8 @@ public class Ubicacion {
     private String nombre;
     private Double latitud;
     private Double longitud;
-    private Integer tipoId;
-    
 
+    @ManyToOne
+    @JoinColumn(name = "tipo_ubicacion_id")    // DEPOSITO ORIDEN DESTINO CLIENTE
+    private TipoUbicacion tipo;
 }

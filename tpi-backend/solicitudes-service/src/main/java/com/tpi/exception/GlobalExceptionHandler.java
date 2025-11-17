@@ -62,4 +62,15 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
+
+    @ExceptionHandler(ContenedorNoDisponibleException.class)
+    public ResponseEntity<ErrorResponse> handleContenedorNoDisponible(ContenedorNoDisponibleException ex) {
+        log.warn("Contenedor no disponible: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            "CONTENEDOR_NO_DISPONIBLE",  // Código de error específico
+            ex.getMessage(),
+            HttpStatus.CONFLICT.value()  // 409 Conflict es apropiado
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
 }

@@ -8,12 +8,14 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TipoTramo {
+public class TipoTramo {    // tipo(origen-deposito, deposito-deposito, deposito-destino, origen-destino)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
+    @Column(unique = true, nullable = false)
     private String nombre;
 
+    private String descripcion;
 }

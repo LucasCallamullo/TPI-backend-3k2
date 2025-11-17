@@ -49,7 +49,7 @@ public class AuthController {
         System.out.println("===============================================");
 
         // -------------------------------
-        // 1️⃣ Construir Form Data
+        // 1 Construir Form Data
         // -------------------------------
         String formData = "grant_type=authorization_code" +
                 "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8) +
@@ -61,7 +61,7 @@ public class AuthController {
         System.out.println("➡ FORM DATA = " + formData);
 
         // -------------------------------
-        // 2️⃣ Intercambiar CODE por TOKEN
+        // 2 Intercambiar CODE por TOKEN
         // -------------------------------
         String tokenResponse;
         try {
@@ -80,7 +80,7 @@ public class AuthController {
         System.out.println("➡ " + tokenResponse);
 
         // -------------------------------
-        // 3️⃣ Parsear JSON del token
+        // 3 Parsear JSON del token
         // -------------------------------
         JsonNode tokenJson = OBJECT_MAPPER.readTree(tokenResponse);
         String accessToken = tokenJson.get("access_token").asText();
@@ -89,7 +89,7 @@ public class AuthController {
                 accessToken.substring(0, 20) + "...");
 
         // -------------------------------
-        // 4️⃣ Decodificar JWT
+        // 4 Decodificar JWT
         // -------------------------------
         String[] chunks = accessToken.split("\\.");
         Base64.Decoder decoder = Base64.getUrlDecoder();
@@ -111,7 +111,7 @@ public class AuthController {
         System.out.println("➡ Username    = " + nombre);
 
         // -------------------------------
-        // 5️⃣ Sincronizar con clientes-service
+        // 5 Sincronizar con clientes-service
         // -------------------------------
         Map<String, String> syncRequest = Map.of(
                 "keycloakId", keycloakId,

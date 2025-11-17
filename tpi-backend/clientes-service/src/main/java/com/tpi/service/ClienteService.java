@@ -19,6 +19,48 @@ public class ClienteService {
         this.clienteRepository = clienteRepository;
     }
 
+
+    @SuppressWarnings("null")
+    public Cliente sincronizarCliente(
+        String keycloakId, String nombre, String email, String telefono, String direccion) {
+
+        return clienteRepository.findById(keycloakId)
+            .map(clienteExistente -> {
+                boolean updated = false;
+                
+                if (nombre != null && !nombre.equals(clienteExistente.getNombre())) {
+                    clienteExistente.setNombre(nombre);
+                    updated = true;
+                }
+                if (email != null && !email.equals(clienteExistente.getEmail())) {
+                    clienteExistente.setEmail(email);
+                    updated = true;
+                }
+                if (telefono != null && !telefono.equals(clienteExistente.getTelefono())) {
+                    clienteExistente.setTelefono(telefono);
+                    updated = true;
+                }
+                if (direccion != null && !direccion.equals(clienteExistente.getDireccion())) {
+                    clienteExistente.setDireccion(direccion);
+                    updated = true;
+                }
+                
+                return updated ? clienteRepository.save(clienteExistente) : clienteExistente;
+            })
+            .orElseGet(() -> {
+                Cliente nuevoCliente = Cliente.builder()
+                    .id(keycloakId)
+                    .nombre(nombre)
+                    .email(email != null ? email : "")
+                    .telefono(telefono != null ? telefono : "")
+                    .direccion(direccion != null ? direccion : "")
+                    .fechaCreacion(LocalDateTime.now())
+                    .build();
+                return clienteRepository.save(nuevoCliente);
+            });
+    }
+
+    /* 
     @SuppressWarnings("null")
     public Cliente sincronizarCliente(String keycloakId, String nombre, String email, String telefono) {
         
@@ -72,7 +114,7 @@ public class ClienteService {
             // Guardar el nuevo cliente en la base de datos
             return clienteRepository.save(nuevoCliente);
         }
-    }
+    } */
 
     @SuppressWarnings("null")
     // Método para buscar un cliente por su ID (keycloakId)

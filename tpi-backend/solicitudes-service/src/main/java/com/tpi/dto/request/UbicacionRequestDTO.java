@@ -45,15 +45,15 @@ public record UbicacionRequestDTO(
     @NotNull(message = "La longitud es requerida")
     Double longitud,
 
+    /**
+     * A lo sumo aca de distinto es mandar un id, y despues hace la logica ubicacion para asociarlo
+     * 
+     */
     @Schema(
-        description = "Tipo de ubicación",
-        /* examples = {
-            @ExampleObject(name = "Depósito", value = "DEPOSITO"),
-            @ExampleObject(name = "Puerto", value = "PUERTO"),
-            @ExampleObject(name = "Aeropuerto", value = "AEROPUERTO")
-        }, */
+        description = "ID del tipo de ubicación. Valores: 1=Depósito, 2=Puerto, 3=Aeropuerto, 4=Cliente",
+        example = "1",
         required = true
     )
-    @NotBlank(message = "El tipo de ubicación es requerido")
-    String tipo
+    @NotNull(message = "El ID del tipo de ubicación es requerido")
+    Long tipoId  
 ) {}

@@ -2,7 +2,6 @@ package com.tpi.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,10 +31,11 @@ public class Solicitud {
     @Column(name = "destino_id")  
     private Long destinoId;          // ID de ubicación en ms-logistica
     
-    private BigDecimal costoEstimado;
-    private Integer tiempoEstimado; // en horas
-    private BigDecimal costoFinal;
-    private Integer tiempoReal; // en horas
+    private Double costoEstimado;
+    private Double tiempoEstimado;     // en horas
+    
+    private Double costoFinal;
+    private Double tiempoReal;     // en horas
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estado_id")

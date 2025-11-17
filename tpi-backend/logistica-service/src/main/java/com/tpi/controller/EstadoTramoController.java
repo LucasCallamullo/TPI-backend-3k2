@@ -1,7 +1,8 @@
 package com.tpi.controller;
 
 import com.tpi.model.EstadoTramo;
-import com.tpi.repository.EstadoTramoRepository;
+import com.tpi.service.EstadoTramoService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,25 +11,27 @@ import java.util.List;
 @RequestMapping("/api/v1/estado-tramos")
 public class EstadoTramoController {
 
-    private final EstadoTramoRepository estadoTramoRepository;
+    private final EstadoTramoService estadoTramoService;
 
-    public EstadoTramoController(EstadoTramoRepository estadoTramoRepository) {
-        this.estadoTramoRepository = estadoTramoRepository;
+    public EstadoTramoController(EstadoTramoService estadoTramoService) {
+        this.estadoTramoService = estadoTramoService;
     }
 
     @GetMapping
     public List<EstadoTramo> listarEstadoTramos() {
-        return estadoTramoRepository.findAll();
+        return estadoTramoService.findAll();
     }
 
+    @SuppressWarnings("null")
     @PostMapping
     public EstadoTramo crearEstadoTramo(@RequestBody EstadoTramo estadoTramo) {
-        return estadoTramoRepository.save(estadoTramo);
+        return estadoTramoService.save(estadoTramo);
     }
 
+    @SuppressWarnings("null")
     @GetMapping("/{id}")
-    public EstadoTramo obtenerPorId(@PathVariable Integer id) {
-        return estadoTramoRepository.findById(id).orElse(null);
+    public EstadoTramo obtenerPorId(@PathVariable Long id) {
+        return estadoTramoService.findById(id);
     }
 }
 

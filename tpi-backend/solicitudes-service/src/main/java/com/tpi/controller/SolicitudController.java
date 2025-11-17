@@ -2,18 +2,31 @@ package com.tpi.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
-import com.tpi.dto.request.CrearSolicitudCompletaRequestDTO;
-import com.tpi.dto.response.EstadoTransporteResponseDTO;
-import com.tpi.dto.response.SolicitudResponseDTO;
+import com.tpi.dto.external.CostoFinalDTO;
+import com.tpi.dto.external.CostosEstimadosDTO;
+import com.tpi.dto.request.AsignarRutaRequest;
+import com.tpi.dto.request.SolicitudCompletaRequestDTO;
+import com.tpi.dto.response.SolicitudResponses.SolicitudWithRutaResponseDTO;
+import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionAndRutaResponseDTO;
+import com.tpi.dto.response.ContenedorResponseDTO;
+import com.tpi.dto.response.SolicitudResponses.SolicitudResponseDTO;
+
 import com.tpi.service.SolicitudService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -24,16 +37,15 @@ import java.util.List;
  * Controller para gestionar las operaciones relacionadas con solicitudes de transporte
  * Expone endpoints REST para crear, consultar y actualizar solicitudes
  */
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/solicitudes")
 @Tag(name = "Solicitudes", description = "API para gestión de solicitudes de transporte")
 public class SolicitudController {
     
     private final SolicitudService solicitudService;
-
-    public SolicitudController(SolicitudService solicitudService) {
-        this.solicitudService = solicitudService;
-    }
+    // private final EstadoSolicitudService estadoSolicitudService;
     
     /**
      * GET ALL - Consultar todas las solicitudes
@@ -95,7 +107,7 @@ public class SolicitudController {
                 required = true
             )
             @PathVariable Long id) {
-        SolicitudResponseDTO response = solicitudService.findById(id);
+        SolicitudResponseDTO response = solicitudService.getDTOById(id);
         return ResponseEntity.ok(response);
     }
 
@@ -177,80 +189,334 @@ public class SolicitudController {
         @Parameter(
             description = "Datos completos para crear la solicitud",
             required = true,
-            schema = @Schema(implementation = CrearSolicitudCompletaRequestDTO.class)
+            schema = @Schema(implementation = SolicitudCompletaRequestDTO.class)
         )
-        @RequestBody CrearSolicitudCompletaRequestDTO request) {
+        @Valid @RequestBody SolicitudCompletaRequestDTO request,
+        @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
+
+        String keycloakId = jwt.getSubject();
+        log.info("Creando solicitud para cliente Keycloak ID: {}", keycloakId);
         
-        SolicitudResponseDTO response = solicitudService.crearSolicitudCompleta(request);
+        SolicitudResponseDTO response = solicitudService.crearSolicitudCompleta(request, keycloakId);
+        
+        log.info("Solicitud creada exitosamente ID: {} para cliente: {}", 
+                response.id(), keycloakId);
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * GET - Consultar estado del transporte de una solicitud
-     * Endpoint RESTful para obtener el estado completo del transporte
-     */
+
+
     @Operation(
-        summary = "Consultar estado del transporte",
-        description = "Obtiene el estado completo del transporte asociado a una solicitud específica"
+        summary = "Seguimiento de solicitud",
+        description = "Permite al cliente consultar el estado actual del traslado de su contenedor"
     )
     @ApiResponses({
         @ApiResponse(
-            responseCode = "200", 
-            description = "Estado del transporte obtenido exitosamente",
-            content = @Content(schema = @Schema(implementation = EstadoTransporteResponseDTO.class))
+            responseCode = "200",
+            description = "Seguimiento obtenido exitosamente",
+            content = @Content(schema = @Schema(implementation = SolicitudWithUbicacionAndRutaResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Solicitud no encontrada"
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "No tiene permisos para ver esta solicitud"
+        )
+    })
+    @GetMapping("/seguimiento/{solicitudId}")
+    public SolicitudWithUbicacionAndRutaResponseDTO obtenerSeguimiento(
+        @Parameter(description = "ID de la solicitud") 
+        @PathVariable Long solicitudId) {
+        
+        return solicitudService.seguimientoSolicitud(solicitudId);
+    }
+
+    
+
+
+
+    /*
+    * Asigna ruta a la solicitud que creamos antes
+    */
+    @Operation(
+        summary = "Asignar ruta a solicitud",
+        description = """
+            Asigna una ruta con sus tramos a una solicitud de transporte y retorna la solicitud actualizada con la ruta asignada.
+            
+            **Permisos requeridos:** ROLE_OPERADOR o ROLE_ADMIN
+            
+            **Flujo:**
+            1. Valida que la solicitud exista y esté en estado PROGRAMABLE
+            2. Crea la ruta con los tramos especificados en MS-LOGISTICA
+            3. Actualiza el estado de la solicitud a PROGRAMADA
+            4. Retorna la solicitud actualizada con los detalles completos de la ruta asignada
+            
+            **Estados válidos para asignar ruta:** BORRADOR, PROGRAMABLE
+            
+            **Validaciones de tramos:**
+            - El primer tramo debe comenzar en el origen de la solicitud
+            - El último tramo debe terminar en el destino de la solicitud  
+            - Los tramos deben ser secuenciales y continuos (destino = origen del siguiente)
+            - El orden debe ser secuencial empezando desde 1
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Ruta asignada exitosamente - Retorna la solicitud actualizada con los detalles de la ruta",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = SolicitudWithRutaResponseDTO.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Solicitud inválida - Puede ser: ID inválido, datos de ruta incompletos, solicitud no está en estado programable, tramos mal formados o no secuenciales",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         ),
         @ApiResponse(
             responseCode = "404", 
-            description = "Solicitud o estado de transporte no encontrado"
+            description = "Solicitud no encontrada - Verifique que el ID de solicitud exista",
+            content = @Content(
+                mediaType = "application/json", 
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "No autorizado - Se requiere rol OPERADOR o ADMIN",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "409", 
+            description = "Conflicto - La solicitud ya tiene una ruta asignada o no está en estado programable",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "503",
+            description = "Servicio no disponible - MS-LOGISTICA no está disponible para crear la ruta",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
-    @GetMapping("/{solicitudId}/estado-transporte")
-    public ResponseEntity<EstadoTransporteResponseDTO> consultarEstadoTransporte(
-            @Parameter(
-                description = "ID de la solicitud",
-                example = "1",
-                required = true
-            )
-            @PathVariable Long solicitudId) {
+    @PostMapping("/{id}/asignar-ruta")
+    public ResponseEntity<SolicitudWithRutaResponseDTO> asignarRuta(
+        @Parameter(
+            description = "ID de la solicitud a la que se asignará la ruta",
+            required = true,
+            example = "1"
+        )
+        @PathVariable Long id,
         
-        EstadoTransporteResponseDTO response = solicitudService.obtenerEstadoTransporte(solicitudId);
-        return ResponseEntity.ok(response);
+        @Parameter(
+            description = "Datos de la ruta y tramos a asignar. Los tramos deben ser secuenciales y formar una ruta continua desde el origen hasta el destino de la solicitud.",
+            required = true
+        )
+        @RequestBody @Valid AsignarRutaRequest request) {
+        
+        SolicitudWithRutaResponseDTO solicitudActualizada = solicitudService.asignarRuta(id, request);
+        return ResponseEntity.ok(solicitudActualizada);
     }
-}
+
+
 
     /**
-     * PUT - Asignar ruta a solicitud
-     * Asigna una ruta completa con todos sus tramos a una solicitud existente
+     * CALCULAR COSTOS ESTIMADOS PARA SOLICITUD
+     * 
+     * Este endpoint calcula los costos estimados de logística para una solicitud específica
+     * y actualiza la solicitud con la información de costos calculada.
+     * 
+     * @param solicitudId ID de la solicitud para la cual se calcularán los costos estimados
+     * @return CostosEstimadosDTO con el desglose detallado de costos calculados
+     */
+    @Operation(
+        summary = "Calcular costos estimados para solicitud",
+        description = """
+            Calcula los costos estimados de logística (transporte, manejo, seguros, etc.) 
+            para una solicitud específica y actualiza la solicitud con esta información.
+            
+            Flujo del proceso:
+            1. Valida la existencia de la solicitud
+            2. Consulta al microservicio de logística para cálculo de costos
+            3. Actualiza la solicitud con los costos estimados
+            4. Retorna el desglose detallado de costos
+            """,
+        tags = {"Solicitudes - Costos"}
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Costos estimados calculados exitosamente",
+            content = @Content(schema = @Schema(implementation = CostosEstimadosDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Solicitud no encontrada"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos de solicitud inválidos para cálculo de costos"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor durante el cálculo"
+        )
+    })
+    @PatchMapping("/{id}/calcular-costos-estimados")
+    public ResponseEntity<CostosEstimadosDTO> calcularCostosEstimados(
+            @Parameter(description = "ID de la solicitud", example = "12345")
+            @PathVariable("id") Long solicitudId) {
+        
+        log.info("Calculando costos estimados para solicitud ID: {}", solicitudId);
+        
+        CostosEstimadosDTO costos = solicitudService.calcularCostosEstimados(solicitudId);
+        
+        log.info("Costos estimados calculados exitosamente para solicitud ID: {}", solicitudId);
+        return ResponseEntity.ok(costos);
+    }
 
-    @PutMapping("/{id}/ruta")
-    public ResponseEntity<SolicitudResponseDTO> asignarRuta(
-        @PathVariable String id, 
-        @RequestBody AsignarRutaRequestDTO request) {
-        SolicitudResponseDTO response = solicitudService.asignarRuta(id, request);
+
+    /**
+     * CALCULAR Y ACTUALIZAR COSTOS TOTALES DE SOLICITUD
+     * 
+     * Este endpoint calcula los costos totales finales para una solicitud y actualiza
+     * el registro de la solicitud con los valores calculados. La operación es de tipo
+     * PATCH ya que modifica parcialmente el recurso solicitud.
+     */
+    @Operation(
+        summary = "Calcular y actualizar costos totales de solicitud",
+        description = """
+            Calcula los costos totales finales de la operación logística y actualiza la solicitud
+            con los valores calculados. Esta operación modifica el estado de la solicitud.
+            
+            **Características de la operación:**
+            - **Tipo:** PATCH - Actualización parcial del recurso
+            - **Idempotente:** Sí - Múltiples llamadas con los mismos datos producen el mismo resultado
+            - **Side Effects:** Actualiza el campo de costos en la solicitud
+            
+            **Proceso ejecutado:**
+            1. Validación de existencia de la solicitud
+            2. Cálculo de costos totales (transporte, combustibles, peajes, impuestos)
+            3. Actualización del campo de costos en la entidad Solicitud
+            4. Persistencia de los cambios en base de datos
+            5. Retorno del detalle de costos calculados
+            
+            """,
+        tags = {"Solicitudes", "Costos", "Actualizaciones"}
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Costos totales calculados y solicitud actualizada exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = CostoFinalDTO.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Solicitud inválida para cálculo de costos",
+            content = @Content(
+                mediaType = "application/json"
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Solicitud no encontrada",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    name = "noEncontrada",
+                    summary = "Solicitud no existe",
+                    value = """
+                        {
+                        "timestamp": "2024-01-15T14:30:00Z",
+                        "message": "No se encontró la solicitud con ID 99999",
+                        "code": "SOLICITUD_NO_ENCONTRADA",
+                        "path": "/api/solicitudes/99999/calcular-costos-totales"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    name = "errorInterno",
+                    summary = "Error inesperado",
+                    value = """
+                        {
+                        "timestamp": "2024-01-15T14:30:00Z",
+                        "message": "Error interno durante el cálculo de costos",
+                        "code": "ERROR_INTERNO",
+                        "detalle": "Timeout en conexión a base de datos"
+                        }
+                        """
+                )
+            )
+        )
+    })
+    @PatchMapping("/{id}/calcular-costos-totales")
+    public ResponseEntity<CostoFinalDTO> calcularCostosTotales(
+        @Parameter(
+            description = "ID único de la solicitud a actualizar",
+            example = "12345",
+            required = true,
+            schema = @Schema(
+                minimum = "1",
+                type = "integer",
+                description = "Identificador único de la solicitud"
+            )
+        )
+        @PathVariable("id") Long solicitudId) {
+        
+        log.info("[PATCH] Calculando y actualizando costos totales para solicitud ID: {}", solicitudId);
+        
+        CostoFinalDTO costos = solicitudService.calcularCostosTotales(solicitudId);
+    
+        return ResponseEntity.ok(costos);
+    }
+
+
+    @GetMapping("/{id}/contenedor")
+    public ResponseEntity<ContenedorResponseDTO> consultarSolicitudes(
+        @RequestParam(required = false) Long id) {
+        ContenedorResponseDTO response = solicitudService.obtenerContenedor(id);
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * GET - Consultar todas las solicitudes con filtros
      * Permite filtrar por estado, cliente o contenedor
-
+    
     @GetMapping
     public ResponseEntity<List<SolicitudResponseDTO>> consultarSolicitudes(
         @RequestParam(required = false) String estado,
         @RequestParam(required = false) String clienteId,
         @RequestParam(required = false) String contenedorId) {
-        List<SolicitudResponseDTO> response = solicitudService.obtenerSolicitudesConFiltros(estado, clienteId, contenedorId);
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * PUT - Registrar cálculo final de tiempo y costo real
-     * Finaliza la solicitud registrando los valores reales de tiempo y costo
-  
-    @PutMapping("/{id}/finalizar")
-    public ResponseEntity<SolicitudResponseDTO> finalizarSolicitud(
-        @PathVariable String id,
-        @RequestBody FinalizarSolicitudRequestDTO request) {
-        SolicitudResponseDTO response = solicitudService.finalizarSolicitud(id, request);
+        List<SolicitudResponseDTO> response = solicitudService.obtenerSolicitudesConFiltros(
+            estado, clienteId, contenedorId);
         return ResponseEntity.ok(response);
     } */
+}
+
+    

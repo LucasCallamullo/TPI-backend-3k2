@@ -41,19 +41,22 @@ spring:
         # ==============================================
         #  Solicitudes URL
         # ==============================================
-        - id: solicitudes-service-root
+        # Para rutas EXACTAS (sin / al final)
+        - id: solicitudes-entities-root
           uri: http://solicitudes-service:8083
           predicates:
-            - Path=/solicitudes
+            - Path=/solicitudes, /contenedores
           filters:
-            - RewritePath=/solicitudes, /api/v1/solicitudes
+            - RewritePath=/(?<entity>solicitudes|contenedores), /api/v1/${entity}
 
-        - id: solicitudes-service-segment
+        # Para todas las SUB-RUTAS
+        - id: solicitudes-entities-all  
           uri: http://solicitudes-service:8083
           predicates:
-            - Path=/solicitudes/**
+            - Path=/solicitudes/**, /contenedores/**
           filters:
-            - RewritePath=/solicitudes/(?<segment>.*), /api/v1/solicitudes/${segment}
+            - RewritePath=/(?<entity>solicitudes|contenedores)/(?<segment>.*), /api/v1/${entity}/${segment}
+
 
         # =========================================================
         # SWAGGER SOLICITUDES
@@ -73,6 +76,75 @@ spring:
             - RewritePath=/solicitudes-service/(?<segment>.*), /$\{segment}
 
 
+        # ==============================================
+        #  LOGISTICA URL
+        # ==============================================
+        # Para rutas EXACTAS (sin / al final)
+        - id: logistica-entities-root
+          uri: http://logistica-service:8084
+          predicates:
+            - Path=/camiones, /rutas, /depositos, /tarifas
+          filters:
+            - RewritePath=/(?<entity>camiones|rutas|depositos|tarifas), /api/v1/${entity}
+
+        # Para todas las SUB-RUTAS
+        - id: logistica-entities-all  
+          uri: http://logistica-service:8084
+          predicates:
+            - Path=/camiones/**, /rutas/**, /depositos/**, /tarifas/**
+          filters:
+            - RewritePath=/(?<entity>camiones|rutas|depositos|tarifas)/(?<segment>.*), /api/v1/${entity}/${segment}
+
+        
+        # Para rutas EXACTAS (sin / al final)
+        - id: logistica-entities-roott
+          uri: http://logistica-service:8084
+          predicates:
+            - Path=/tramos, /ubicaciones, /tipo-tramos, /tipos-ubicacion, /estado-tramos
+          filters:
+            - RewritePath=/(?<entity>tramos|ubicaciones|tipo-tramos|tipos-ubicacion|estado-tramos), /api/v1/${entity}
+
+        # Para todas las SUB-RUTAS
+        - id: logistica-entities-alll 
+          uri: http://logistica-service:8084
+          predicates:
+            - Path=/tramos/**, /ubicaciones/**, /tipo-tramos/**, /tipos-ubicacion/**, estado-tramos/**
+          filters:
+            - RewritePath=/(?<entity>tramos|ubicaciones|tipo-tramos|tipos-ubicacion|estado-tramos)/(?<segment>.*), /api/v1/${entity}/${segment}
+
+        # =========================================================
+        # SWAGGER LOGISTICA
+        # =========================================================
+        - id: logistica-service-swagger-config
+          uri: http://logistica-service:8084
+          predicates:
+            - Path=/logistica-service/v3/api-docs/swagger-config
+          filters:
+            - RewritePath=/logistica-service/v3/api-docs/swagger-config, /v3/api-docs/swagger-config
+
+        - id: logistica-service-swagger-catch-all
+          uri: http://logistica-service:8084
+          predicates:
+            - Path=/logistica-service/**
+          filters:
+            - RewritePath=/logistica-service/(?<segment>.*), /$\{segment}
+
+
+        # =========================================================
+        # ROUTING SERVICE
+        # =========================================================
+        - id: routing-service
+          uri: http://routing-service:8088
+          predicates:
+            - Path=/routing/**
+          filters:
+            - RewritePath=/routing/(?<segment>.*), /api/v1/routing/${segment}
+
+
+
+        # =========================================================
+        # KEYCLOACK
+        # =========================================================
         - id: keycloak
           uri: http://keycloak:8080
           predicates:
@@ -94,3 +166,5 @@ springdoc:
         name: Solicitudes Service
       - url: /clientes-service/v3/api-docs
         name: Clientes Service
+      - url: /logistica-service/v3/api-docs
+        name: Logistica Service

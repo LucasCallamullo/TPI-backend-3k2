@@ -1,7 +1,8 @@
 package com.tpi.controller;
 
 import com.tpi.model.TipoTramo;
-import com.tpi.repository.TipoTramoRepository;
+import com.tpi.service.TipoTramoService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,24 +11,26 @@ import java.util.List;
 @RequestMapping("/api/v1/tipo-tramos")
 public class TipoTramoController {
 
-    private final TipoTramoRepository tipoTramoRepository;
+    private final TipoTramoService tipoTramoService;
 
-    public TipoTramoController(TipoTramoRepository tipoTramoRepository) {
-        this.tipoTramoRepository = tipoTramoRepository;
+    public TipoTramoController(TipoTramoService tipoTramoService) {
+        this.tipoTramoService = tipoTramoService;
     }
 
     @GetMapping
     public List<TipoTramo> listarTipoTramos() {
-        return tipoTramoRepository.findAll();
+        return tipoTramoService.findAll();
     }
 
+    @SuppressWarnings("null")
     @PostMapping
     public TipoTramo crearTipoTramo(@RequestBody TipoTramo tipoTramo) {
-        return tipoTramoRepository.save(tipoTramo);
+        return tipoTramoService.save(tipoTramo);
     }
 
+    @SuppressWarnings("null")
     @GetMapping("/{id}")
-    public TipoTramo obtenerPorId(@PathVariable Integer id) {
-        return tipoTramoRepository.findById(id).orElse(null);
+    public TipoTramo findById(@PathVariable Long id) {
+        return tipoTramoService.findById(id);
     }
 }

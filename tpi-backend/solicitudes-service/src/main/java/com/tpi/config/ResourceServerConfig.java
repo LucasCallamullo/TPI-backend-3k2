@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 
 import java.util.List;
 import java.util.Map;
@@ -27,11 +28,8 @@ public class ResourceServerConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/**").permitAll()  // ← TEMPORAL!
-
-
-                /* COMENTAR temporalmente toda la seguridad 
-
+                // .requestMatchers("/**").permitAll()  // ← TEMPORAL!
+                /* COMENTAR temporalmente toda la seguridad  */
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**", 
@@ -40,16 +38,38 @@ public class ResourceServerConfig {
                     "/webjars/**"
                 ).permitAll()
 
-                // ✅ PERMITIR endpoints públicos de prueba
+                // URLs PÚBLICAS (sin autenticación)
                 .requestMatchers("/api/v1/solicitudes/publico").permitAll()
-                .requestMatchers("/api/v1/solicitudes/health").permitAll()
-                
-                // Los demás endpoints requieren autenticación
-                .requestMatchers("/api/v1/solicitudes/**").authenticated()
-                .requestMatchers("/api/v1/contenedores/**").authenticated()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/info").permitAll()
+
+                // URLs para CLIENTES
+                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/seguimiento/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/{id}").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/{id}/contenedor").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+
+                // URLs para OPERADOR y ADMIN
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes")
+                    .hasAnyRole("OPERADOR", "ADMIN")
+
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/{id}/estado")
+                    .hasAnyRole("OPERADOR", "ADMIN")
+
+                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/{id}/asignar-ruta")
+                    .hasAnyRole("OPERADOR", "ADMIN")
+
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/{id}/calcular-costos-estimados")
+                    .hasAnyRole("OPERADOR", "ADMIN")
+
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/{id}/calcular-costos-totales")
+                    .hasAnyRole("OPERADOR", "ADMIN")
+
+                // URLs solo para ADMIN
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/solicitudes/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/solicitudes/**").hasRole("ADMIN")
                 
                 .anyRequest().authenticated()
-                */
             )
             .oauth2ResourceServer(oauth2 -> 
                 oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

@@ -31,6 +31,8 @@ services:
       - "8080:8080"
     networks:
       - tpi-backend-network
+    depends_on:
+      - routing-osrm
 
   clientes-service:
     build: ./clientes-service
@@ -43,10 +45,42 @@ services:
     container_name: solicitudes-service
     networks:
       - tpi-backend-network
+    environment:
+      - OSRM_BASE_URL=http://routing-osrm:5000
 
   logistica-service:
     build: ./logistica-service
     container_name: logistica-service
+    networks:
+      - tpi-backend-network
+    environment:
+      - OSRM_BASE_URL=http://routing-osrm:5000
+
+  # ======
+  # Routing Service
+  # =====
+  # Tu microservicio que CONSUME OSRM
+  routing-service:  
+    build: ./routing-service  # ← Carpeta de tu Spring Boot
+    container_name: routing-service
+    ports:
+      - "8088:8088"  # ← Puerto de tu app Spring
+    networks:
+      - tpi-backend-network
+    environment:
+      - OSRM_BASE_URL=http://routing-osrm:5000
+    depends_on:
+      - routing-osrm
+
+  # Servicio OSRM (backend)
+  routing-osrm:
+    image: osrm/osrm-backend:latest
+    container_name: routing-osrm
+    ports:
+      - "5000:5000"  # ← Puerto del servicio OSRM
+    volumes:
+      - "C:/Users/Lucas Callamullo/Documents/docker/osrm:/data"
+    command: osrm-routed /data/argentina-latest.osrm
     networks:
       - tpi-backend-network
 

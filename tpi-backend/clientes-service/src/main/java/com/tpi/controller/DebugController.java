@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/clientes")
-@Tag(name = "Debug", description = "Endpoints de prueba para seguridad y roles")
+@Tag(name = "Debug Roles", description = "Endpoints de prueba para seguridad y roles")
 public class DebugController {
     
     @Operation(

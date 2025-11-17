@@ -24,11 +24,12 @@ import java.time.LocalDateTime;
 public class Cliente {
 
     /**
-     * Identificador único del cliente.
+     * Identificador único del cliente (Keycloak ID).
      * Corresponde al "sub" (subject) del token JWT de Keycloak.
-     * Este campo sirve como clave primaria y como enlace con el usuario en Keycloak.
+     * Este campo es la clave primaria y el enlace con Keycloak.
      */
     @Id
+    @Column(name = "keycloak_id")
     private String id;
 
     /**

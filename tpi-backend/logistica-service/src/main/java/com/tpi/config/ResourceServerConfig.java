@@ -3,6 +3,7 @@ package com.tpi.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,12 +30,11 @@ public class ResourceServerConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 // =============================================
-                // ✅ TEMPORAL: PERMITIR SIEMPRE
+                // TEMPORAL: PERMITIR SIEMPRE
                 // =============================================
-                .requestMatchers("/**").permitAll()  // ← TEMPORAL!
+                // .requestMatchers("/**").permitAll()  // ← TEMPORAL!
 
-
-                /* COMENTAR temporalmente toda la seguridad  
+                /* COMENTAR temporalmente toda la seguridad  */
                 // Permitir acceso público a Swagger/OpenAPI
                 .requestMatchers(
                     "/swagger-ui.html",
@@ -46,14 +46,40 @@ public class ResourceServerConfig {
                 
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/info").permitAll()
-                .requestMatchers("/api/v1/clientes/publico").permitAll()
-                .requestMatchers("/api/v1/clientes/sincronizar").permitAll()
 
-                .requestMatchers("/api/v1/clientes/hola-clientes").hasRole("CLIENTE")
-                .requestMatchers("/api/v1/clientes/hola-admin").hasRole("ADMIN")
-                .requestMatchers("/api/v1/clientes/operaciones").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .requestMatchers("/api/v1/clientes/mi-perfil").authenticated()
-                // .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE") */
+                .requestMatchers(HttpMethod.GET, "/api/v1/camiones").hasAnyRole("ADMIN", "TRANSPORTISTA")
+                .requestMatchers(HttpMethod.GET, "/api/v1/camiones/**").hasAnyRole("ADMIN", "TRANSPORTISTA")
+                .requestMatchers(HttpMethod.POST, "/api/v1/camiones").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/camiones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/camiones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/camiones/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/depositos").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/depositos/**").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/v1/depositos").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/depositos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/depositos/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/tarifas").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/tarifas/**").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/v1/tarifas").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/tarifas/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/tarifas/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/tipos-ubicacion").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/tipos-ubicacion/**").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/v1/tipos-ubicacion").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/tipos-ubicacion/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/tipos-ubicacion/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/tipos-ubicacion/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/ubicaciones").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/ubicaciones/**").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
+                .requestMatchers(HttpMethod.POST, "/api/v1/ubicaciones").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/ubicaciones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/ubicaciones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/ubicaciones/**").hasRole("ADMIN")
+                // .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE") 
 
                 .anyRequest().authenticated() 
             )

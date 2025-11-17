@@ -1,9 +1,11 @@
 package com.tpi.controller;
 
+import com.tpi.dto.ActualizarClienteRequest;
 import com.tpi.dto.SincronizarClienteRequest;
 import com.tpi.model.Cliente;
 import com.tpi.service.ClienteService;
 
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,24 +18,29 @@ import java.util.Optional;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import com.tpi.service.SecurityContextService;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/clientes")
 @Tag(name = "Clientes", description = "API para gestión de clientes")
 public class ClienteController {
 
     private final ClienteService clienteService;
+    private final SecurityContextService securityContextService;
 
-    // Inyección de dependencias del servicio mediante constructor
-    public ClienteController(ClienteService clienteService) {
-        this.clienteService = clienteService;
-    }
-
+    /*
+     * Sincroniza la base de datos con el keycloackID para info extra de nosotros 
+     */
     @Operation(
         summary = "Sincronizar cliente desde Keycloak",
         description = "Crea o actualiza un cliente en base a la información proveniente de Keycloak"
@@ -67,7 +74,8 @@ public class ClienteController {
                 request.getKeycloakId(),
                 request.getNombre(),
                 request.getEmail(),
-                request.getTelefono()
+                request.getTelefono(),
+                request.getDireccion()
             );
             
             // Construir respuesta exitosa
@@ -86,6 +94,100 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error interno del servidor: " + e.getMessage());
         }
+    }
+
+    /**
+     * Actualiza cliente a si mismo
+     */
+    @Operation(
+        summary = "Actualizar datos del cliente autenticado",
+        description = """
+            Permite al cliente actualizar parcialmente sus datos personales.
+            
+            **Características:**
+            - Actualización parcial: solo los campos enviados se actualizan
+            - Identificación automática mediante JWT
+            - Solo permite actualizar el propio perfil
+            - Campos opcionales: nombre, email, teléfono, dirección
+            
+            **Comportamiento:**
+            - Campos nulos o no enviados se ignoran
+            - Solo se realiza UPDATE si hay cambios reales
+            - Si el cliente no existe en BD, se crea automáticamente
+            """,
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Cliente actualizado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Cliente.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Request mal formado",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "No autenticado o token JWT inválido",
+            content = @Content(
+                mediaType = "application/json", 
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
+        )
+    })
+    @PatchMapping("/me")
+    public Cliente actualizarMisDatos(
+        @Parameter(
+            description = "DTO con los campos a actualizar. Solo los campos no nulos serán considerados.",
+            required = true,
+            examples = {
+                @ExampleObject(
+                    name = "Actualizar solo teléfono",
+                    summary = "Ejemplo actualizando solo teléfono",
+                    value = """
+                        {
+                        "telefono": "+54 11 1234-5678"
+                        }
+                        """
+                ),
+                @ExampleObject(
+                    name = "Actualizar múltiples campos", 
+                    summary = "Ejemplo actualizando nombre y dirección",
+                    value = """
+                        {
+                        "nombre": "Juan Carlos Pérez",
+                        "direccion": "Av. Siempre Viva 123, Springfield"
+                        }
+                        """
+                )
+            }
+        )
+        @RequestBody @Valid ActualizarClienteRequest request) {
+        
+        String keycloakId = securityContextService.obtenerClienteIdDesdeToken();
+        return clienteService.sincronizarCliente(
+            keycloakId, 
+            request.nombre(),
+            request.email(), 
+            request.telefono(),
+            request.direccion()
+        );
     }
 
     /*

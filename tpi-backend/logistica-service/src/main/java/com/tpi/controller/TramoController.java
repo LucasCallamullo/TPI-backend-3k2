@@ -21,11 +21,13 @@ public class TramoController {
         return tramoRepository.findAll();
     }
 
+    @SuppressWarnings("null")
     @PostMapping
     public Tramo crearTramo(@RequestBody Tramo tramo) {
         return tramoRepository.save(tramo);
     }
 
+    @SuppressWarnings("null")
     @GetMapping("/{id}")
     public Tramo obtenerPorId(@PathVariable Long id) {
         return tramoRepository.findById(id).orElse(null);
