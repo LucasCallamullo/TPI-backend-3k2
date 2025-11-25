@@ -12,7 +12,7 @@ public class UbicacionResponses {
         String nombre,
         Double latitud,
         Double longitud,
-        TipoUbicacionInfoDTO tipoDto
+        TipoUbicacionInfoDTO tipo
     ) {}
     
     public record TipoUbicacionInfoDTO(

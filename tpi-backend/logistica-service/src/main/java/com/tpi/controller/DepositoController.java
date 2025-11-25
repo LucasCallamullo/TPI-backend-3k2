@@ -1,6 +1,7 @@
 package com.tpi.controller;
 
 import com.tpi.dto.request.ActualizarDepositoRequest;
+import com.tpi.dto.request.DepositoRequest;
 import com.tpi.model.Deposito;
 import com.tpi.service.DepositoService;
 
@@ -49,11 +50,13 @@ public class DepositoController {
     )
     @PostMapping
     public Deposito crearDeposito(
-        @Parameter(description = "Datos del depósito a crear")
-        @RequestBody @Valid Deposito deposito
+            @Parameter(description = "Datos del depósito a crear")
+            @RequestBody @Valid DepositoRequest request
     ) {
-        return depositoService.save(deposito);
+        return depositoService.crearDeposito(request);
     }
+
+    
 
     @Operation(
         summary = "Obtener depósito por ID", 

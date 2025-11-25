@@ -55,7 +55,9 @@ public class UbicacionController {
     public UbicacionResponseDTO crearUbicacion(
         @Parameter(description = "Datos de la ubicación a crear")
         @Valid @RequestBody UbicacionRequestDTO request) {
+            
         Ubicacion ubicacion = ubicacionService.crearUbicacion(request);
+        
         return UbicacionResponseDTO.fromEntity(ubicacion);
     }
 
@@ -76,6 +78,7 @@ public class UbicacionController {
     )
     @GetMapping
     public List<UbicacionResponseDTO> listarUbicaciones() {
+
         return ubicacionService.obtenerTodas();
     }
 

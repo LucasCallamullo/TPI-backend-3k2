@@ -13,6 +13,7 @@ import com.tpi.dto.request.AsignarRutaRequest;
 import com.tpi.dto.request.SolicitudCompletaRequestDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithRutaResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionAndRutaResponseDTO;
+import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionResponseDTO;
 import com.tpi.dto.response.ContenedorResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudResponseDTO;
 
@@ -45,7 +46,6 @@ import java.util.List;
 public class SolicitudController {
     
     private final SolicitudService solicitudService;
-    // private final EstadoSolicitudService estadoSolicitudService;
     
     /**
      * GET ALL - Consultar todas las solicitudes
@@ -53,32 +53,72 @@ public class SolicitudController {
      */
     @Operation(
         summary = "Obtener todas las solicitudes",
-        description = "Retorna lista completa de solicitudes. Puede ser filtrada por estado. Acceso para Operador/Administrador"
+        description = """
+            Retorna lista completa de solicitudes con posibilidad de filtrado.
+            
+            Roles permitidos:
+            • OPERADOR
+            • ADMINISTRADOR
+            
+            Filtros disponibles:
+            • estado: PENDIENTE, PROGRAMADA, EN_CURSO, COMPLETADA, CANCELADA
+            
+            Ejemplo: /api/v1/solicitudes?estado=PENDIENTE
+            """
     )
     @ApiResponses({
         @ApiResponse(
-            responseCode = "200", 
-            description = "Lista de solicitudes obtenida exitosamente",
+            responseCode = "200", description = "Lista de solicitudes obtenida exitosamente",
             content = @Content(schema = @Schema(implementation = SolicitudResponseDTO[].class))
+        ),
+        @ApiResponse(
+            responseCode = "404", description = "Contenedor de la solicitud no encontrado"
         )
     })
     @GetMapping
     public ResponseEntity<List<SolicitudResponseDTO>> obtenerTodasSolicitudes(
-            @Parameter(
-                description = "Filtrar solicitudes por estado",
-                examples = {
-                    @ExampleObject(name = "Pendiente", value = "PENDIENTE"),
-                    @ExampleObject(name = "Programada", value = "PROGRAMADA"),
-                    @ExampleObject(name = "En curso", value = "EN_CURSO"),
-                    @ExampleObject(name = "Completada", value = "COMPLETADA"),
-                    @ExampleObject(name = "Cancelada", value = "CANCELADA")
-                }
-            )
-            @RequestParam(required = false) String estado) {
+            @Parameter(description = "Filtrar solicitudes por estado")
+            @RequestParam(required = false) String estado
+        ) {
         
         List<SolicitudResponseDTO> response = solicitudService.findAll(estado);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Endpoint para solicitar contenedor asociado como dto a devolver
+     * @param id es el ID de la socicitud que tiene su contenedor asociado
+     * @return
+     */
+    @Operation(
+        summary = "Obtener contenedor de una solicitud",
+        description = "Devuelve la información del contenedor asociado a una solicitud específica por su ID."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Contenedor obtenido correctamente",
+            content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ContenedorResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Solicitud no encontrada"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor"
+        )
+    })
+    @GetMapping("/{id}/contenedor")
+    public ResponseEntity<ContenedorResponseDTO> consultarSolicitudes(
+        @Parameter(description = "ID de la solicitud", required = true, example = "1")
+        @PathVariable Long id
+    ) {  
+        ContenedorResponseDTO response = solicitudService.obtenerContenedor(id);
+        return ResponseEntity.ok(response);
+    }
+
 
     /**
      * GET - Consultar solicitud por ID
@@ -90,13 +130,11 @@ public class SolicitudController {
     )
     @ApiResponses({
         @ApiResponse(
-            responseCode = "200", 
-            description = "Solicitud encontrada",
+            responseCode = "200", description = "Solicitud encontrada",
             content = @Content(schema = @Schema(implementation = SolicitudResponseDTO.class))
         ),
         @ApiResponse(
-            responseCode = "404", 
-            description = "Solicitud no encontrada"
+            responseCode = "404", description = "Solicitud no encontrada"
         )
     })
     @GetMapping("/{id}")
@@ -107,9 +145,11 @@ public class SolicitudController {
                 required = true
             )
             @PathVariable Long id) {
+                
         SolicitudResponseDTO response = solicitudService.getDTOById(id);
         return ResponseEntity.ok(response);
     }
+
 
     /**
      * PATCH - Actualizar estado de una solicitud
@@ -118,7 +158,10 @@ public class SolicitudController {
      */
     @Operation(
         summary = "Actualizar estado de una solicitud",
-        description = "Actualiza el estado de una solicitud específica. Estados válidos: PENDIENTE, PROGRAMADA, EN_CURSO, COMPLETADA, CANCELADA"
+        description = """
+            Actualiza el estado de una solicitud específica. 
+            • Estados válidos: PENDIENTE, PROGRAMADA, EN_CURSO, COMPLETADA, CANCELADA
+        """
     )
     @ApiResponses({
         @ApiResponse(
@@ -167,37 +210,39 @@ public class SolicitudController {
      */
     @Operation(
         summary = "Crear nueva solicitud de transporte",
-        description = "Registra una nueva solicitud de transporte completa. Incluye datos del contenedor, ubicación de origen y destino. Orquesta la creación en ambos microservicios"
+        description = """
+            Registra una nueva solicitud de transporte completa. 
+            Incluye datos del contenedor, ubicación de origen y destino. 
+            Orquesta la creación en ambos microservicios
+        """
     )
     @ApiResponses({
         @ApiResponse(
-            responseCode = "201", 
-            description = "Solicitud creada exitosamente",
-            content = @Content(schema = @Schema(implementation = SolicitudResponseDTO.class))
+            responseCode = "201", description = "Solicitud creada exitosamente",
+            content = @Content(schema = @Schema(implementation = SolicitudWithUbicacionResponseDTO.class))
         ),
         @ApiResponse(
-            responseCode = "400", 
-            description = "Datos de entrada inválidos"
+            responseCode = "400", description = "Datos de entrada inválidos"
         ),
         @ApiResponse(
-            responseCode = "409", 
-            description = "Conflicto - Contenedor ya existe o datos duplicados"
+            responseCode = "409", description = "Conflicto - Contenedor ya existe o datos duplicados"
         )
     })
     @PostMapping
-    public ResponseEntity<SolicitudResponseDTO> crearSolicitud(
+    public ResponseEntity<SolicitudWithUbicacionResponseDTO> crearSolicitud(
         @Parameter(
-            description = "Datos completos para crear la solicitud",
-            required = true,
+            description = "Datos completos para crear la solicitud", required = true,
             schema = @Schema(implementation = SolicitudCompletaRequestDTO.class)
         )
         @Valid @RequestBody SolicitudCompletaRequestDTO request,
         @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
 
+        // Aprovechamos el jwt para que el cliente tenga asociada una solicitud
+        // entendimos que el cliente era quien hacía la solicitud
         String keycloakId = jwt.getSubject();
         log.info("Creando solicitud para cliente Keycloak ID: {}", keycloakId);
         
-        SolicitudResponseDTO response = solicitudService.crearSolicitudCompleta(request, keycloakId);
+        SolicitudWithUbicacionResponseDTO response = solicitudService.crearSolicitudCompleta(request, keycloakId);
         
         log.info("Solicitud creada exitosamente ID: {} para cliente: {}", 
                 response.id(), keycloakId);
@@ -206,7 +251,9 @@ public class SolicitudController {
     }
 
 
-
+    /**
+     * Endpoint utilizado para recibir info completa de la solicitud, con su ubicacion y su ruta y tramos
+     */
     @Operation(
         summary = "Seguimiento de solicitud",
         description = "Permite al cliente consultar el estado actual del traslado de su contenedor"
@@ -234,12 +281,9 @@ public class SolicitudController {
         return solicitudService.seguimientoSolicitud(solicitudId);
     }
 
-    
-
-
 
     /*
-    * Asigna ruta a la solicitud que creamos antes
+    * Asigna ruta a una solicitud creada
     */
     @Operation(
         summary = "Asignar ruta a solicitud",
@@ -318,13 +362,15 @@ public class SolicitudController {
     public ResponseEntity<SolicitudWithRutaResponseDTO> asignarRuta(
         @Parameter(
             description = "ID de la solicitud a la que se asignará la ruta",
-            required = true,
-            example = "1"
+            required = true, example = "1"
         )
         @PathVariable Long id,
         
         @Parameter(
-            description = "Datos de la ruta y tramos a asignar. Los tramos deben ser secuenciales y formar una ruta continua desde el origen hasta el destino de la solicitud.",
+            description = """
+                Datos de la ruta y tramos a asignar. Los tramos deben ser secuenciales y 
+            formar una ruta continua desde el origen hasta el destino de la solicitud.
+            """,
             required = true
         )
         @RequestBody @Valid AsignarRutaRequest request) {
@@ -332,8 +378,6 @@ public class SolicitudController {
         SolicitudWithRutaResponseDTO solicitudActualizada = solicitudService.asignarRuta(id, request);
         return ResponseEntity.ok(solicitudActualizada);
     }
-
-
 
     /**
      * CALCULAR COSTOS ESTIMADOS PARA SOLICITUD
@@ -379,14 +423,10 @@ public class SolicitudController {
     })
     @PatchMapping("/{id}/calcular-costos-estimados")
     public ResponseEntity<CostosEstimadosDTO> calcularCostosEstimados(
-            @Parameter(description = "ID de la solicitud", example = "12345")
-            @PathVariable("id") Long solicitudId) {
-        
-        log.info("Calculando costos estimados para solicitud ID: {}", solicitudId);
+        @Parameter(description = "ID de la solicitud", example = "12345")
+        @PathVariable("id") Long solicitudId) {
         
         CostosEstimadosDTO costos = solicitudService.calcularCostosEstimados(solicitudId);
-        
-        log.info("Costos estimados calculados exitosamente para solicitud ID: {}", solicitudId);
         return ResponseEntity.ok(costos);
     }
 
@@ -495,28 +535,4 @@ public class SolicitudController {
         return ResponseEntity.ok(costos);
     }
 
-
-    @GetMapping("/{id}/contenedor")
-    public ResponseEntity<ContenedorResponseDTO> consultarSolicitudes(
-        @RequestParam(required = false) Long id) {
-        ContenedorResponseDTO response = solicitudService.obtenerContenedor(id);
-
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * GET - Consultar todas las solicitudes con filtros
-     * Permite filtrar por estado, cliente o contenedor
-    
-    @GetMapping
-    public ResponseEntity<List<SolicitudResponseDTO>> consultarSolicitudes(
-        @RequestParam(required = false) String estado,
-        @RequestParam(required = false) String clienteId,
-        @RequestParam(required = false) String contenedorId) {
-        List<SolicitudResponseDTO> response = solicitudService.obtenerSolicitudesConFiltros(
-            estado, clienteId, contenedorId);
-        return ResponseEntity.ok(response);
-    } */
 }
-
-    

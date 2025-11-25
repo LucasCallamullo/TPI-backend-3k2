@@ -13,9 +13,10 @@ public class UbicacionDTOs {
         String nombre,
         Double latitud,
         Double longitud,
-        TipoUbicacionDTO tipoDto
+        TipoUbicacionDTO tipo
     ) {
         public static UbicacionResponseDTO fromEntity(Ubicacion ubicacion) {
+
             TipoUbicacion tipo = ubicacion.getTipo();
             TipoUbicacionDTO tipoDto = tipo != null ? 
                 new TipoUbicacionDTO(tipo.getId(), tipo.getNombre()) : null;

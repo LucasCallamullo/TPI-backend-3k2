@@ -12,13 +12,10 @@ import com.tpi.dto.response.CostosEstimadosDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
-// import com.tpi.model.Contenedor;
 
 @Service
 @Transactional
@@ -122,6 +119,14 @@ public class CalculoCostoService {
             .build();
     }
 
+    /**
+     * Calcula la duración entre dos fechas en segundos.
+     * Si alguna de las fechas es null, devuelve 0.
+     *
+     * @param fechaInicio fecha inicial.
+     * @param fechaFin fecha final.
+     * @return duración en segundos entre las dos fechas.
+     */
     private long calcularDuracionSegundos(Date fechaInicio, Date fechaFin) {
         if (fechaInicio == null || fechaFin == null) {
             return 0;
@@ -129,12 +134,26 @@ public class CalculoCostoService {
         long diferenciaMs = fechaFin.getTime() - fechaInicio.getTime();
         return diferenciaMs / 1000; // Convertir a segundos
     }
+
     
     /**
-     * Calcula costos ESTIMADOS para una ruta (sin camiones asignados)
-     * Busca camiones que cumplan con las capacidades requeridas y promedia costos
+     * Calcula costos ESTIMADOS para una ruta sin camiones asignados.
+     *
+     * Este método:
+     * 1. Obtiene los tramos de la ruta.
+     * 2. Consulta el microservicio de solicitudes para obtener la información del contenedor.
+     * 3. Busca camiones compatibles según peso y volumen requeridos.
+     * 4. Calcula los promedios de costo y consumo entre los camiones compatibles.
+     * 5. Obtiene la tarifa asociada a la ruta.
+     * 6. Calcula los costos estimados usando los promedios y los datos de la tarifa.
+     *
+     * Lanza IllegalStateException si:
+     * - La ruta no tiene tramos.
+     * - No existen camiones compatibles.
+     *
+     * @param ruta Ruta para la cual se calcularán los costos estimados.
+     * @return objeto DTO con los costos estimados de transporte.
      */
-    @SuppressWarnings("null")
     public CostosEstimadosDTO calcularCostosEstimados(Ruta ruta) {
         
         // 1. Obtener ruta con tramos
@@ -171,14 +190,24 @@ public class CalculoCostoService {
     }
     
     /**
-     * Calcula promedios de los camiones disponibles que cumplan con la capacidad para el contenedor
+     * Calcula los valores PROMEDIO de los camiones compatibles.
+     *
+     * Este método:
+     * - Calcula el costo por kilómetro promedio entre todos los camiones recibidos.
+     * - Calcula el consumo de combustible promedio (litros cada 100 km).
+     * - Si no hay valores válidos, devuelve 0.0 como promedio.
+     *
+     * @param camiones lista de camiones compatibles con la solicitud.
+     * @return objeto PromedioCamiones con los promedios calculados.
      */
     private PromedioCamiones calcularPromedioCamiones(List<Camion> camiones) {
+        // 1. Calcula el costo por kilómetro promedio entre todos los camiones recibidos. o 0.0 por defecto
         Double costoPorKmPromedio = camiones.stream()
             .mapToDouble(Camion::getCostoPorKm)
             .average()
             .orElse(0.0);
             
+        // 2. Calcula el consumo de combustible promedio (litros cada 100 km). o 0.0 por defecto
         Double consumoPromedio = camiones.stream()
             .mapToDouble(Camion::getConsumoCombustibleLx100km)
             .average()
@@ -187,6 +216,33 @@ public class CalculoCostoService {
         return new PromedioCamiones(costoPorKmPromedio, consumoPromedio);
     }
     
+    /**
+     * Calcula los costos ESTIMADOS de una ruta utilizando valores promedio
+     * obtenidos de camiones compatibles.
+     *
+     * Este método:
+     * - Recorre todos los tramos de la ruta.
+     * - Suma el costo de gestión por cada tramo.
+     * - Calcula el costo estimado del camión en función del costo por km promedio.
+     * - Calcula el costo estimado de combustible según el consumo promedio.
+     * - Suma costos de estadía si el tramo lo requiere.
+     * - Suma el tiempo total estimado de todos los tramos.
+     *
+     * Finalmente construye y devuelve un objeto CostosEstimadosDTO que agrupa:
+     * - Costos desglosados
+     * - Costos totales
+     * - Promedios utilizados
+     * - Tiempo total estimado
+     * - Cantidad de camiones compatibles
+     *
+     * @param rutaId ID de la ruta.
+     * @param tramos lista de tramos de la ruta.
+     * @param promedio valores promedio de camiones compatibles.
+     * @param costoGestionPorTramo costo fijo de gestión por tramo.
+     * @param precioCombustible precio del combustible por litro.
+     * @param cantidadCamionesCompatibles cantidad de camiones que cumplen las capacidades.
+     * @return DTO con todos los costos estimados calculados.
+     */
     private CostosEstimadosDTO calcularCostosConPromedios(
         Long rutaId, List<Tramo> tramos, PromedioCamiones promedio,
         Double costoGestionPorTramo, Double precioCombustible, int cantidadCamionesCompatibles) {

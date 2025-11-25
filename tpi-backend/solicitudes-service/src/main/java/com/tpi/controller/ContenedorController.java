@@ -5,18 +5,16 @@ import com.tpi.dto.response.ContenedorResponseDTO;
 import com.tpi.service.ContenedorService;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -50,15 +48,16 @@ public class ContenedorController {
     })
     @GetMapping
     public ResponseEntity<List<ContenedorResponseDTO>> obtenerTodosContenedores(
-            @Parameter(
-                description = "Filtrar contenedores por estado",
-                examples = {
-                    @ExampleObject(name = "Disponible", value = "DISPONIBLE"),
-                    @ExampleObject(name = "En tránsito", value = "EN_TRANSITO"),
-                    @ExampleObject(name = "Entregado", value = "ENTREGADO")
-                }
-            )
-            @RequestParam(required = false) String estado) {
+        @Parameter(
+            description = "Filtrar contenedores por estado",
+            examples = {
+                @ExampleObject(name = "Disponible", value = "DISPONIBLE"),
+                @ExampleObject(name = "En tránsito", value = "EN_TRANSITO"),
+                @ExampleObject(name = "Entregado", value = "ENTREGADO")
+            }
+        )
+        @RequestParam(required = false) String estado) {
+            
         List<ContenedorResponseDTO> contenedores = contenedorService.findAll(estado);
         return ResponseEntity.ok(contenedores);
     }
@@ -83,12 +82,13 @@ public class ContenedorController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ContenedorResponseDTO> obtenerContenedor(
-            @Parameter(
-                description = "ID del contenedor",
-                example = "1",
-                required = true
-            )
-            @PathVariable Long id) {
+        @Parameter(
+            description = "ID del contenedor",
+            example = "1",
+            required = true
+        )
+        @PathVariable Long id) {
+        
         ContenedorResponseDTO contenedor = contenedorService.findById(id);
         return ResponseEntity.ok(contenedor);
     }

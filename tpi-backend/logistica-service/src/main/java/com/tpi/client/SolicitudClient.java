@@ -4,6 +4,7 @@ import com.tpi.dto.external.ContenedorResponseDTO;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.exception.MicroservicioNoDisponibleException;
 // import com.tpi.service.SecurityContextService;
+import com.tpi.service.SecurityContextService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +22,21 @@ public class SolicitudClient {
     // URL para OBTENER contenedor (no crear ubicación)
     private static final String SOLICITUD_PATH = "/api/v1/solicitudes"; //  Solo el path
 
+    private final SecurityContextService securityContextService;
+
     // private final SecurityContextService securityContextService;
     private final RestClient solicitudesRestClient;     // Nombre coincide con bean en RestConfig
 
     public ContenedorResponseDTO obtenerInfoContenedor(Long solicitudId) {
         log.info("Obteniendo información del contenedor para solicitud ID: {}", solicitudId);
-        
+
         try {
-            ContenedorResponseDTO solicitud = solicitudesRestClient.get()
+            String jwtToken = securityContextService.obtenerJwtToken();
+            
+            ContenedorResponseDTO solicitud = solicitudesRestClient
+                .get()
                 .uri(SOLICITUD_PATH + "/{solicitudId}/contenedor", solicitudId)
+                .header("Authorization", "Bearer " + jwtToken)        // Agregado
                 .retrieve()
                 .body(ContenedorResponseDTO.class);
             

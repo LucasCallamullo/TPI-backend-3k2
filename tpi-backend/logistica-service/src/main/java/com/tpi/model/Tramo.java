@@ -41,14 +41,24 @@ public class Tramo {
     @JoinColumn(name = "estado_tramo_id")
     private EstadoTramo estado; // ESTIMADO, ASIGNADO, INICIADO, FINALIZADO
     
-    private Date fechaHoraCreacion;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaHoraCreacion;    // se agrega el campo previo a persistir la entidad
+
     private Date fechaHoraInicio;
+
+    // datos que sirven para el calculo de estadia en depositos
     private Date fechaHoraLlegada;    // llega  a deposito
     private Date fechaHoraFin;        // finaliza o reanuda saliedo de deposito
     
-    private Double distanciaKm;     // Calculado con Google Maps API
+    // Calculado con OSRM local
+    private Double distanciaKm;         
     private Long duracionEstimadaSegundos;    
 
+    // Sirve para saber que tramo sería si el primero, segundo, etc
+    // Empieza a contar desde 0
+    private Integer orden;
+
+    // Otro endpoint se encarga de hacer esto
     private Double costoAproximado;
     private Double costoReal;
 
@@ -56,8 +66,6 @@ public class Tramo {
     private Integer diasEstadia;
     private Double costoEstadia;
 
-    private Integer orden;
-    
     // ===== MÉTODOS DE CÁLCULO AUTOMÁTICO =====
 
     /**
@@ -139,5 +147,11 @@ public class Tramo {
             );
         }
         return null;
+    }
+
+    
+    @PrePersist
+    protected void onCreate() {
+        fechaHoraCreacion = new Date();  // Fecha actual al persistir
     }
 }

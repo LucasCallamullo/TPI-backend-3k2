@@ -26,7 +26,7 @@ public class Contenedor {
     @Column(name = "cliente_id") // ← NULLABLE - puede no tener dueño
     private String clienteId; // Solo cuando está asignado a un cliente
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)        // No lazy
     @JoinColumn(name = "estado_contenedor_id")
     private EstadoContenedor estado;
     

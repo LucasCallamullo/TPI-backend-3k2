@@ -1,7 +1,10 @@
 package com.tpi.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,9 +31,8 @@ public class Ruta {
     private Integer cantidadTramos;
     private Integer cantidadDepositos;
 
-    // Cache de cálculos (opcional pero útil)
-    private Double costoEstimado;
-    private Double costoFinal;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaHoraCreacion;
 
     // =====
     // Todos estos datos no hacen falta aca ya estarían en los tramos parcialmente
@@ -45,5 +47,13 @@ public class Ruta {
     // RELACIÓN CON TRAMOS (NECESARIA)
     @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
+    @ToString.Exclude
+    @JsonIgnore
     private List<Tramo> tramos = new ArrayList<>();
+
+    
+    @PrePersist
+    protected void onCreate() {
+        fechaHoraCreacion = new Date();  // Fecha actual al persistir
+    }
 }

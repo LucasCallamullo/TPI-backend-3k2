@@ -1,10 +1,9 @@
 package com.tpi.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.tpi.client.RoutingClient;
@@ -18,7 +17,6 @@ import com.tpi.model.Tramo;
 import com.tpi.model.Ubicacion;
 import com.tpi.repository.TramoRepository;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -31,115 +29,181 @@ public class TramoService {
     private final RoutingClient routingClient;
 
     /**
-     * En este punto la logica es los tramos estan dados por el origen y el destino
-     * en caos de que el origen vaya directo a destino es cuando no hay depositos intermedios
-     * 
-     * sino se calculara en caso de un deposito
-     * origien - deposito  -->>  deposito - destitno
-     * 
-     * y asi sucesivamente en base a la cantidad de depositos intermedios
+     * Genera automáticamente los tramos de una ruta en función de:
+     * - Origen
+     * - Destino
+     * - Lista opcional de depósitos intermedios
+     *
+     * Lógica general:
+     *  - Si NO hay depósitos → un único tramo ORIGEN → DESTINO
+     *  - Si hay depósitos → se generan tantos tramos como segmentos existan:
+     *        Origen → Depósito1
+     *        Depósito1 → Depósito2
+     *        ...
+     *        ÚltimoDepósito → Destino
      */
     public List<Tramo> crearTramosAutomaticos(
-        Ruta ruta, Ubicacion origen, Ubicacion destino, List<Long> depositosIds) {
+            Ruta ruta, Ubicacion origen, Ubicacion destino, List<Long> depositosIds) {
         
+        // Paso 1: Crear contenedor para los tramos que se devolverán
         List<Tramo> tramos = new ArrayList<>();
-        // Obtener depósitos (puede estar vacío)
-        List<Deposito> depositos = (depositosIds != null && !depositosIds.isEmpty()) 
-            ? depositoService.findAllById(depositosIds) 
+
+        // Paso 2: Obtener depósitos si la lista contiene IDs
+        List<Deposito> depositos = (depositosIds != null && !depositosIds.isEmpty())
+            ? depositoService.findAllById(depositosIds)
             : new ArrayList<>();
-        
+
+        // Paso 3: Extraer ubicaciones de cada depósito
         List<Ubicacion> ubicacionesDepositos = depositos.stream()
             .map(Deposito::getUbicacion)
             .collect(Collectors.toList());
-        
-        // Caso 1: Sin depósitos intermedios (origen → destino directo)
+
+        // ============================================================
+        // Caso 1: NO hay depósitos intermedios → tramo directo
+        // ============================================================
         if (ubicacionesDepositos.isEmpty()) {
+
+            // Paso 4: Obtener tipo de tramo ORIGEN_DESTINO
             TipoTramo tipoTramo = tipoTramoService.findByNombre("ORIGEN_DESTINO");
 
+            // Paso 5: Crear tramo directo origen → destino (orden = 0)
             Tramo tramoDirecto = crearTramo(
-                ruta, origen, destino, 
+                ruta, origen, destino,
                 tipoTramo, 0
             );
+
+            // Paso 6: Guardar tramo directo en la lista
             tramos.add(tramoDirecto);
-        } 
-        // Caso 2: Con depósitos intermedios
+        }
+        // ============================================================
+        // Caso 2: Sí hay depósitos intermedios
+        // ============================================================
         else {
+            // Paso 7: Primer tramo Origen → Primer depósito
             TipoTramo tipoTramo = tipoTramoService.findByNombre("ORIGEN_DEPOSITO");
 
-            // Primer tramo: Origen → Primer depósito
             Tramo primerTramo = crearTramo(
                 ruta, origen, ubicacionesDepositos.get(0),
                 tipoTramo, 0
             );
             tramos.add(primerTramo);
-            
-            // Tramos intermedios: Depósito → Depósito
+
+            // Paso 8: Tramos intermedios entre depósitos consecutivos
             for (int i = 0; i < ubicacionesDepositos.size() - 1; i++) {
+
                 TipoTramo tipoTramito = tipoTramoService.findByNombre("DEPOSITO_DEPOSITO");
 
                 Tramo tramoIntermedio = crearTramo(
                     ruta, ubicacionesDepositos.get(i), ubicacionesDepositos.get(i + 1),
                     tipoTramito, i + 1
                 );
+
                 tramos.add(tramoIntermedio);
             }
-            
-            // Último tramo: Último depósito → Destino
+
+            // Paso 9: Último tramo ÚltimoDepósito → Destino
             TipoTramo tipoTramoLast = tipoTramoService.findByNombre("DEPOSITO_DESTINO");
 
             Tramo ultimoTramo = crearTramo(
-                ruta, ubicacionesDepositos.get(ubicacionesDepositos.size() - 1), destino,
-                tipoTramoLast, ubicacionesDepositos.size()
+                ruta,
+                ubicacionesDepositos.get(ubicacionesDepositos.size() - 1),
+                destino,
+                tipoTramoLast,
+                ubicacionesDepositos.size()
             );
+
             tramos.add(ultimoTramo);
         }
-        
+
+        // Paso 10: Guardar todos los tramos generados en la BD
         return tramoRepository.saveAll(tramos);
     }
 
-    private Tramo crearTramo(Ruta ruta, Ubicacion origen, Ubicacion destino, 
-                           TipoTramo tipoTramo, int orden) {
-           
-        // EStado del tramo     // ESTIMADO, ASIGNADO, INICIADO, FINALIZADO
+
+    /**
+     * Crea un Tramo entre dos ubicaciones (origen → destino) calculando
+     * distancia y duración con el servicio de routing (OSRM). Si falla el
+     * llamado al servicio, usa un cálculo de fallback euclidiano.
+     *
+     * @param ruta      Ruta a la que pertenece el tramo (referencia).
+     * @param origen    Ubicación de origen.
+     * @param destino   Ubicación de destino.
+     * @param tipoTramo Tipo de tramo (ORIGEN_DESTINO, DEPOSITO_DEPOSITO, etc.).
+     * @param orden     Posición/orden del tramo dentro de la ruta.
+     * @return Tramo construido (sin persistir).
+     */
+    private Tramo crearTramo(Ruta ruta, Ubicacion origen, Ubicacion destino,
+                            TipoTramo tipoTramo, int orden) {
+
+        // Paso 1: Determinar estado inicial del tramo (ESTIMADO)
         EstadoTramo estado = estadoTramoService.findByNombre("ESTIMADO");
-        
-        // Calcular distancia con Google Maps API
-        // Ahora usas tu OSRM en Docker
+
+        // Paso 2: Intentar calcular distancia y duración usando el servicio de routing (OSRM)
         RouteResponse rutaInfo;
-            try {
-                rutaInfo = routingClient.calcularRutaCompleta(
-                    origen.getLatitud(), origen.getLongitud(),
-                    destino.getLatitud(), destino.getLongitud()
-                );
-            } catch (Exception e) {
-                // Fallback a cálculo simple
-                double distanciaFallback = calcularDistanciaEuclidiana(origen, destino);
-                rutaInfo = new RouteResponse(distanciaFallback, 0L, 
-                                        origen.getLatitud(), origen.getLongitud(),
-                                        destino.getLatitud(), destino.getLongitud());
-            }
-            
-            return Tramo.builder()
-                .ruta(ruta) // Solo referencia por ID
-                .origen(origen)
-                .destino(destino)
-                .tipo(tipoTramo)
-                .estado(estado)
-                .distanciaKm(rutaInfo.distanciaKm())
-                .duracionEstimadaSegundos(rutaInfo.duracionSegundos())    // para calculo posterior de estimado en horas
-                .orden(orden) // Para mantener el orden de los tramos
-                .fechaHoraCreacion(new Date())
-                .build();
+        try {
+            // 2.1 Llamada al cliente de routing pasando lat/lon de origen y destino
+            rutaInfo = routingClient.calcularRutaCompleta(
+                origen.getLatitud(), origen.getLongitud(),
+                destino.getLatitud(), destino.getLongitud()
+            );
+        } catch (Exception e) {
+            // Paso 3: Si falla el servicio externo, aplicar fallback simple
+            // 3.1 Calcular distancia euclidiana aproximada (en km)
+            double distanciaFallback = calcularDistanciaEuclidiana(origen, destino);
+
+            // 3.2 Construir un RouteResponse mínimo con la información disponible
+            //      - distancia: aproximada (km)
+            //      - duracion: 0 (desconocida, se puede mejorar según criterio)
+            //      - dejamos lat/lon tal cual para trazabilidad
+            rutaInfo = new RouteResponse(
+                distanciaFallback,
+                0L,
+                origen.getLatitud(), origen.getLongitud(),
+                destino.getLatitud(), destino.getLongitud()
+            );
         }
 
-        // Método de fallback para cálculo de distancia simple
-        private Double calcularDistanciaEuclidiana(Ubicacion origen, Ubicacion destino) {
-            double latDiff = destino.getLatitud() - origen.getLatitud();
-            double lonDiff = destino.getLongitud() - origen.getLongitud();
-            return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111; // Aproximación a km
-        }
+        // Paso 4: Construir y devolver el Tramo usando los valores calculados
+        double distanciaRedondeada = Math.round(rutaInfo.distanciaKm() * 100.0) / 100.0;
+
+        return Tramo.builder()
+            .ruta(ruta) // 4.1 Referencia a la ruta (por entidad/ID)
+            .origen(origen) // 4.2 Origen (entidad)
+            .destino(destino) // 4.3 Destino (entidad)
+            .tipo(tipoTramo) // 4.4 Tipo de tramo
+            .estado(estado) // 4.5 Estado inicial
+            .distanciaKm(distanciaRedondeada) // 4.6 Distancia en km (desde OSRM o fallback)
+            .duracionEstimadaSegundos(rutaInfo.duracionSegundos()) // 4.7 Duración estimada en segundos INT
+            .orden(orden) // 4.8 Orden para mantener secuencia de tramos
+            .build();
+    }
 
 
+    /**
+     * Método de fallback: aproximación euclidiana entre dos puntos (lat/lon).
+     * Nota: Multiplicamos por ~111 para convertir grados de latitud/longitud a km
+     * (aprox. 1 grado ≈ 111 km). Es una aproximación válida para estimaciones rápidas.
+     *
+     * @param origen  Ubicación de origen.
+     * @param destino Ubicación de destino.
+     * @return Distancia aproximada en kilómetros.
+     */
+    private Double calcularDistanciaEuclidiana(Ubicacion origen, Ubicacion destino) {
+        // Paso 1: Diferencias en latitud y longitud (grados)
+        double latDiff = destino.getLatitud() - origen.getLatitud();
+        double lonDiff = destino.getLongitud() - origen.getLongitud();
+
+        // Paso 2: Distancia euclidiana en grados -> luego convertida a km (~111 km/grado)
+        return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111;
+    }
+
+
+    /**
+     * Obtiene una lista de tramos con sus detalles completos para una ruta específica.
+     *
+     * @param rutaId ID de la ruta cuyos tramos se desean obtener.
+     * @return Lista de objetos TramoConDetalles ordenados por su campo "orden".
+     */
     public List<TramoConDetalles> obtenerTramosConDetallesPorRutaId(Long rutaId) {
         List<Tramo> tramos = tramoRepository.findByRutaIdOrderByOrdenAsc(rutaId);
         
@@ -148,14 +212,25 @@ public class TramoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Convierte una entidad Tramo en un DTO TramoConDetalles.
+     *
+     * @param tramo Entidad Tramo a transformar.
+     * @return DTO TramoConDetalles correspondiente.
+     */
     private TramoConDetalles mapearTramoConDetalles(Tramo tramo) {
         return TramoConDetalles.of(tramo);
     }
 
-    /*
-     * encuentra tramos por repository
+    /**
+     * Obtiene únicamente las entidades Tramo para una ruta específica,
+     * sin mapearlas a DTOs.
+     *
+     * @param rutaId ID de la ruta.
+     * @return Lista de entidades Tramo ordenadas por "orden".
      */
     public List<Tramo> tramosPorRutaId(Long rutaId){
         return tramoRepository.findByRutaIdOrderByOrdenAsc(rutaId);
     }
+
 }

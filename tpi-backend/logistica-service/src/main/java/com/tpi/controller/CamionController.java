@@ -1,6 +1,7 @@
 package com.tpi.controller;
 
 import com.tpi.dto.request.ActualizarCamionRequest;
+import com.tpi.dto.request.CamionRequest;
 import com.tpi.model.Camion;
 import com.tpi.service.CamionService;
 
@@ -58,54 +59,17 @@ public class CamionController {
     }
 
     @Operation(
-        summary = "Crear un nuevo camión",
-        description = """
-            Registra un nuevo camión en el sistema de logística.
-            Requiere todos los datos básicos del camión para su creación.
-            """,
-        responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "Camión creado exitosamente",
-                content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = Camion.class)
-                )
-            ),
-            @ApiResponse(
-                responseCode = "400",
-                description = "Datos de entrada inválidos"
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Error interno del servidor"
-            )
-        }
+    summary = "Crear un nuevo camión",
+        description = "Registra un nuevo camión en el sistema con la información proporcionada."
     )
-
     @PostMapping
     public Camion crearCamion(
-        @Parameter(
-            description = "Datos del camión a crear",
-            required = true,
-            examples = @ExampleObject(
-                name = "Camión ejemplo",
-                summary = "Ejemplo de creación de camión",
-                value = """
-                    {
-                      "patente": "ABC123",
-                      "marca": "Volvo",
-                      "modelo": "FH16",
-                      "capacidadCarga": 25000.5,
-                      "estado": "DISPONIBLE"
-                    }
-                    """
-            )
-        )
-        @RequestBody @Valid Camion camion
+            @Parameter(description = "Datos del camión a crear", required = true)
+            @RequestBody @Valid CamionRequest request
     ) {
-        return camionService.save(camion);
+        return camionService.crearCamion(request);
     }
+
 
     /**
      * Get camion by  id

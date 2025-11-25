@@ -54,7 +54,6 @@ public class DataLoader implements CommandLineRunner {
                 .descripcion("Para contenedores pequeños de hasta 20m³. Ideal para viviendas básicas y oficinas temporales. Camiones económicos con menor consumo.")
                 .volumenMin(0.0)
                 .volumenMax(20.0)
-                .costoPorKmBase(120.0)
                 .costoGestionPorTramo(400.0)
                 .precioCombustiblePorLitro(250.0)
                 .build(),
@@ -65,7 +64,6 @@ public class DataLoader implements CommandLineRunner {
                 .descripcion("Para contenedores medianos de 20-40m³. Ideal para viviendas familiares estándar. Balance perfecto entre costo y capacidad.")
                 .volumenMin(20.0)
                 .volumenMax(40.0)
-                .costoPorKmBase(180.0)
                 .costoGestionPorTramo(500.0)
                 .precioCombustiblePorLitro(250.0)
                 .build(),
@@ -76,7 +74,6 @@ public class DataLoader implements CommandLineRunner {
                 .descripcion("Para contenedores grandes de 40-70m³. Ideal para viviendas amplias y proyectos especiales. Camiones de alta capacidad.")
                 .volumenMin(40.0)
                 .volumenMax(70.0)
-                .costoPorKmBase(250.0)
                 .costoGestionPorTramo(600.0)
                 .precioCombustiblePorLitro(250.0)
                 .build(),
@@ -87,9 +84,8 @@ public class DataLoader implements CommandLineRunner {
                 .descripcion("Para contenedores extra grandes mayores a 70m³. Proyectos especiales y contenedores con equipamiento incluido. Transporte especializado.")
                 .volumenMin(70.0)
                 .volumenMax(1000.0)
-                .costoPorKmBase(350.0)
                 .costoGestionPorTramo(800.0)
-                .precioCombustiblePorLitro(250.0)
+                .precioCombustiblePorLitro(300.0)
                 .build()
         );
         

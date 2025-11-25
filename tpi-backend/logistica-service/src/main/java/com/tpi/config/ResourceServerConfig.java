@@ -75,9 +75,9 @@ public class ResourceServerConfig {
 
                 .requestMatchers(HttpMethod.GET, "/api/v1/ubicaciones").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
                 .requestMatchers(HttpMethod.GET, "/api/v1/ubicaciones/**").hasAnyRole("ADMIN", "TRANSPORTISTA", "CLIENTE")
-                .requestMatchers(HttpMethod.POST, "/api/v1/ubicaciones").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/ubicaciones").hasAnyRole("ADMIN", "CLIENTE")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/ubicaciones/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/ubicaciones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/ubicaciones/**").hasAnyRole("ADMIN", "CLIENTE")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/ubicaciones/**").hasRole("ADMIN")
                 // .requestMatchers("/api/v1/clientes/**").hasRole("CLIENTE") 
 

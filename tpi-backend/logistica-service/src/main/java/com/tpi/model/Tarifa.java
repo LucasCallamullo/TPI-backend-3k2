@@ -26,6 +26,5 @@ public class Tarifa {
     private Double costoGestionPorTramo;
     
     // Costos variables base (para cálculos estimados)
-    private Double costoPorKmBase;
     private Double precioCombustiblePorLitro;        // VALOR FIJO DE CADA TARIFA ?
 }

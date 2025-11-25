@@ -8,7 +8,7 @@ import org.springframework.web.client.RestClient;
 
 @Configuration
 public class RestClientConfig {
-    private static final String SOLICITUDES_URL = "http://solicitudes-service:8082";
+    private static final String SOLICITUDES_URL = "http://solicitudes-service:8083";
     // private static final String SOLICITUDES_URL = "http://localhost:8082"
 
     private static final String ROUTING_URL = "http://routing-service:8088";

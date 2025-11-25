@@ -11,7 +11,7 @@ public record ContenedorRequestDTO(
     @Schema(
         description = "Peso del contenedor en kilogramos",
         example = "1500.5",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         minimum = "0.1"
     )
     @NotNull(message = "El peso es requerido")
@@ -21,7 +21,7 @@ public record ContenedorRequestDTO(
     @Schema(
         description = "Volumen del contenedor en metros cúbicos", 
         example = "33.2",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         minimum = "0.1"
     )
     @NotNull(message = "El volumen es requerido")
@@ -31,7 +31,7 @@ public record ContenedorRequestDTO(
     @Schema(
         description = "Identificación única del contenedor",
         example = "CONT-2024-001-ABC123",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         maxLength = 50
     )
     @NotBlank(message = "La identificación única es requerida")

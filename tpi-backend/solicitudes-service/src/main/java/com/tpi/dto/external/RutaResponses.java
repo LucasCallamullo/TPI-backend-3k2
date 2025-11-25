@@ -20,7 +20,7 @@ public class RutaResponses {
         Integer cantidadTramos,
         
         @Schema(description = "Distancia total en kilómetros", example = "1200.5")
-        Double distanciaTotal,
+        Double distanciaTotalKM,
         
         @Schema(description = "Duración total estimada en horas", example = "14.2")
         Double duracionTotalHoras,

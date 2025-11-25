@@ -30,6 +30,7 @@ import jakarta.transaction.Transactional;
 public class RutaService {
     
     private final RutaRepository rutaRepository;
+
     private final TramoService tramoService;
     private final UbicacionService ubicacionService;
     private final TarifaService tarifaService;
@@ -37,6 +38,7 @@ public class RutaService {
 
     @SuppressWarnings("null")
     public RutaAsignadaResponseDTO crearRutaParaSolicitud(CrearRutaCompletaRequest request) {
+
         log.info("Iniciando creación de ruta para solicitud ID: {}", request.getSolicitudId());
         
         // 1. Validaciones iniciales
@@ -44,7 +46,6 @@ public class RutaService {
             log.debug("Depósitos intermedios es null, inicializando lista vacía");
             request.setDepositosIntermedios(new ArrayList<>());
         }
-        
         log.debug("Cantidad de depósitos intermedios: {}", request.getDepositosIntermedios().size());
 
         // 2. buscar rutas para asociar
@@ -57,12 +58,12 @@ public class RutaService {
         log.debug("Ubicación destino encontrada: {}", destino.getId());
 
         // 3. buscar tarifa para asociar
-        log.debug("Buscando tarifa ID: {}", request.getTarifaId());
-        Tarifa tarifa = tarifaService.findById(request.getTarifaId());
+        Tarifa tarifa = tarifaService.getTarifaByVolumenContenedor(request.getVolumenContenedor());
+
         log.debug("Tarifa encontrada: {}", tarifa.getId());
 
         // 4. Calcular cantidad de tramos
-        int cantidadDepositos = request.getDepositosIntermedios().size();
+        int cantidadDepositos = request.getDepositosIntermedios().size();    // 1
         int cantidadTramos = cantidadDepositos + 1;
         log.debug("Cálculo de tramos: {} depósitos -> {} tramos", cantidadDepositos, cantidadTramos);
 
@@ -93,61 +94,106 @@ public class RutaService {
         return RutaAsignadaResponseDTO.fromEntity(ruta, tarifa, tramos);
     }
 
-    /*
-     * Obtener ruta y tramos para el seguimiento
+    /**
+     * Obtiene la información completa de una ruta asociada a una solicitud,
+     * incluyendo sus tramos con detalles adicionales.
+     *
+     * @param solicitudId ID de la solicitud para la cual se desea obtener la ruta.
+     * @return RutaTramosCamionResponse conteniendo la ruta y sus tramos con detalles.
+     * @throws EntityNotFoundException si no existe una ruta asociada al ID de solicitud dado.
      */
     public RutaTramosCamionResponse obtenerRutaConTramosPorSolicitudId(Long solicitudId) {
-        // Buscar la ruta por solicitudId
+
+        // 1. Buscar la ruta asociada al ID de solicitud en la base de datos.
+        //    Si no existe, se lanza EntityNotFoundException.
         Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
                 .orElseThrow(() -> new EntityNotFoundException(
                     "No se encontró ruta para la solicitud ID: " + solicitudId
                 ));
 
-        // Obtener los tramos de esta ruta
+        // 2. Obtener todos los tramos pertenecientes a esta ruta,
+        //    incluyendo información detallada (camión, origen, destino, etc.)
         List<TramoConDetalles> tramos = tramoService.obtenerTramosConDetallesPorRutaId(ruta.getId());
 
+        // 3. Construir el DTO de respuesta unificado con la ruta + tramos.
         return RutaTramosCamionResponse.of(ruta, tramos);
     }
 
 
-    /*
-     * Se encarga de calcular un gasto estimado
+    /**
+     * Calcula los costos estimados para una solicitud específica.
+     *
+     * @param solicitudId ID de la solicitud cuya ruta se usará para calcular costos.
+     * @return DTO con los costos estimados calculados.
+     * @throws EntidadNotFoundException si no existe una ruta asociada a esa solicitud.
      */
-    @SuppressWarnings("null")
     public CostosEstimadosDTO calcularGastosEstimados(Long solicitudId) {
-        Ruta ruta = rutaRepository.findById(solicitudId)
-            .orElseThrow( () -> new EntidadNotFoundException("Ruta", solicitudId));
 
+        // 1. Buscar la ruta asociada a la solicitud.
+        //    Si no existe, se lanza una excepción personalizada.
+        Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
+            .orElseThrow(() -> new EntidadNotFoundException("Ruta", solicitudId));
+
+        // 2. Delegar el cálculo a la clase encargada del cálculo de costos.
         return calculadoraService.calcularCostosEstimados(ruta);
     }
 
 
-    /*
-     * Se encarga de calcular un gastos totales
+    /**
+     * Calcula los costos totales (finales) de una ruta asociada a una solicitud.
+     *
+     * @param solicitudId ID de la solicitud cuya ruta se evaluará.
+     * @return DTO con el costo final de la ruta.
+     * @throws EntidadNotFoundException si no existe una ruta asociada a esa solicitud.
      */
-    @SuppressWarnings("null")
     public CostoFinalDTO calcularGastosTotales(Long solicitudId) {
-        Ruta ruta = rutaRepository.findById(solicitudId)
-            .orElseThrow( () -> new EntidadNotFoundException("Ruta", solicitudId));
 
+        // 1. Buscar la ruta vinculada a la solicitud.
+        //    Si no existe, se lanza una excepción indicando el problema.
+        Ruta ruta = rutaRepository.findBySolicitudId(solicitudId)
+            .orElseThrow(() -> new EntidadNotFoundException("Ruta", solicitudId));
+
+        // 2. Calcular los costos finales con el servicio especializado.
         return calculadoraService.calcularCostoFinalRuta(ruta);
     }
 
 
 
-
+    /**
+     * Obtiene todas las rutas disponibles en la base de datos.
+     *
+     * @return Lista completa de rutas.
+     */
     public List<Ruta> findAll() {
+        // 1. Solicita al repositorio que devuelva todas las rutas almacenadas.
         return rutaRepository.findAll();
     }
     
+    /**
+     * Busca una ruta por su ID.
+     *
+     * @param id ID de la ruta a buscar.
+     * @return La Ruta encontrada.
+     * @throws EntidadNotFoundException si no existe una ruta con ese ID.
+     */
     @SuppressWarnings("null")
     public Ruta findById(Long id) {
+        // 1. Intenta buscar la ruta por ID.
+        // 2. Si no existe, lanza una excepción personalizada indicando que no se encontró.
         return rutaRepository.findById(id)
                 .orElseThrow(() -> new EntidadNotFoundException("Ruta", id));
     }
     
+    /**
+     * Guarda una ruta en la base de datos (crear o actualizar).
+     *
+     * @param e Ruta a persistir.
+     * @return La ruta guardada con su ID generado (si es nueva).
+     */
     @SuppressWarnings("null")
     public Ruta save(Ruta e) {
+        // 1. Envía la ruta al repositorio para persistirla.
+        // 2. Devuelve la entidad ya almacenada o actualizada.
         return rutaRepository.save(e);
     }
 }

@@ -1,6 +1,7 @@
 package com.tpi.controller;
 
 import com.tpi.dto.ActualizarClienteRequest;
+import com.tpi.dto.ClienteDTO;
 import com.tpi.dto.SincronizarClienteRequest;
 import com.tpi.model.Cliente;
 import com.tpi.service.ClienteService;
@@ -13,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -209,16 +209,16 @@ public class ClienteController {
         )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCliente(
-            @Parameter(
-                description = "ID único del usuario en Keycloak (UUID)",
-                example = "123e4567-e89b-12d3-a456-426614174000",
-                required = true
-            )
-            @PathVariable String id) {
-        Optional<Cliente> cliente = clienteService.getClienteById(id);
-        return cliente.map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ClienteDTO> getCliente(
+        @Parameter(
+            description = "ID único del usuario en Keycloak (UUID)",
+            example = "123e4567-e89b-12d3-a456-426614174000",
+            required = true
+        )
+        @PathVariable String id) {
+
+        ClienteDTO dto = clienteService.getDTOClienteById(id);
+        return ResponseEntity.ok(dto);
     }
 
     /*

@@ -23,7 +23,7 @@ public record RutaAsignadaResponseDTO(
     Integer cantidadTramos,
     
     @Schema(description = "Distancia total en kilómetros", example = "1200.5")
-    Double distanciaTotal,
+    Double distanciaTotalKM,
     
     @Schema(description = "Duración total estimada en horas", example = "14.2")
     Double duracionTotalHoras,
@@ -34,7 +34,7 @@ public record RutaAsignadaResponseDTO(
     public static RutaAsignadaResponseDTO fromEntity(Ruta ruta, Tarifa tarifa, List<Tramo> tramos) {
         
         // Calcular totales
-        Double distanciaTotal = calcularDistanciaTotal(tramos);
+        Double distanciaTotalKM = calcularDistanciaTotal(tramos);
         Double duracionTotalHoras = calcularDuracionTotalHoras(tramos);
         
         // Mapear tramos a DTOs
@@ -46,22 +46,43 @@ public record RutaAsignadaResponseDTO(
             ruta.getId(),
             tramosDTO,
             tramos.size(),
-            distanciaTotal,
+            distanciaTotalKM,
             duracionTotalHoras,
-            new Date() // o ruta.getFechaCreacion() si existe
+            ruta.getFechaHoraCreacion() 
         );
     }
     
+    /**
+     * Calcula la distancia total en kilómetros sumando la distancia
+     * de todos los tramos. Si un tramo no tiene distancia, se usa 0.
+     * El resultado se redondea a dos decimales.
+     */
     private static Double calcularDistanciaTotal(List<Tramo> tramos) {
-        return tramos.stream()
+        double total = tramos.stream()
             .mapToDouble(t -> t.getDistanciaKm() != null ? t.getDistanciaKm() : 0.0)
             .sum();
+
+        return round2(total);
     }
-    
+
+    /**
+     * Calcula la duración total en horas sumando la duración estimada
+     * en segundos de cada tramo y convirtiéndola a horas (seg/3600).
+     * El resultado se redondea a dos decimales.
+     */
     private static Double calcularDuracionTotalHoras(List<Tramo> tramos) {
-        return tramos.stream()
-            .mapToDouble(t -> t.getDuracionEstimadaSegundos() != null ? 
-                            t.getDuracionEstimadaSegundos() / 3600.0 : 0.0)
+        double total = tramos.stream()
+            .mapToDouble(t -> t.getDuracionEstimadaSegundos() != null ?
+                    t.getDuracionEstimadaSegundos() / 3600.0 : 0.0)
             .sum();
+
+        return round2(total);
+    }
+
+    /**
+     * Redondea un valor Double a dos decimales usando Math.round().
+     */
+    private static Double round2(Double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }

@@ -20,7 +20,7 @@ public class Solicitud {
     private String clienteId;
     
     // Relación con contenedor (dentro del mismo microservicio)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "contenedor_id")
     private Contenedor contenedor;
 
@@ -32,12 +32,13 @@ public class Solicitud {
     private Long destinoId;          // ID de ubicación en ms-logistica
     
     private Double costoEstimado;
-    private Double tiempoEstimado;     // en horas
+    private Double tiempoEstimadoHoras;     // en horas
+    private Double distanciaTotalKM;     // en KM
     
     private Double costoFinal;
     private Double tiempoReal;     // en horas
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "estado_id")
     private EstadoSolicitud estado;    // "BORRADOR", "PROGRAMADA", "EN_TRANSITO", "ENTREGADA"
     

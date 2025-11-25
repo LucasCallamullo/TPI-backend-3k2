@@ -46,6 +46,7 @@ public class ResourceServerConfig {
                 // endpoints de pruebas ver si esta actuator en el pom.xml
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/info").permitAll()
+                .requestMatchers("/clientes/sincronizar").permitAll()
                 
                 // Endpoints PÚBLICOS (sin autenticación)
                 .requestMatchers("/api/v1/clientes/publico").permitAll()
@@ -69,8 +70,8 @@ public class ResourceServerConfig {
                 .requestMatchers("/api/v1/clientes/me").hasRole("CLIENTE")
 
                 // Endpoints para ADMIN (solo administradores)
+                .requestMatchers("/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "ADMIN")
                 .requestMatchers("/api/v1/clientes").hasRole("ADMIN")
-                .requestMatchers("/api/v1/clientes/{id}").hasRole("ADMIN")
 
                 .anyRequest().authenticated() 
             )

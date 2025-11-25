@@ -11,16 +11,14 @@ public class SincronizarClienteRequest {
     
     @Schema(
         description = "ID único del usuario en Keycloak",
-        example = "123e4567-e89b-12d3-a456-426614174000",
-        required = true
+        example = "123e4567-e89b-12d3-a456-426614174000"
     )
     @NotBlank(message = "keycloakId es requerido")
     private String keycloakId;
 
     @Schema(
         description = "Nombre completo del cliente",
-        example = "Juan Pérez",
-        required = true
+        example = "Juan Pérez"
     )
     @NotBlank(message = "nombre es requerido")
     private String nombre;

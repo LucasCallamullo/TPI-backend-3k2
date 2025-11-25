@@ -16,26 +16,24 @@ import java.util.Map;
 public class AuthController {
 
     // ================================
-    // 🔗 URLS PARA DOCKER
+    // URLS PARA DOCKER
     // ================================
-    // ✅ URLs INTERNAS (misma red Docker)
+    // URLs INTERNAS (misma red Docker)
     private static final String KEYCLOAK_TOKEN_URL = "http://keycloak:8080/realms/tpi-backend/protocol/openid-connect/token";
     private static final String CLIENTES_SYNC_URL = "http://clientes-service:8082/api/v1/clientes/sincronizar";
     private static final String REDIRECT_URI = "http://localhost:8080/api/login/oauth2/code/keycloak";
 
 
-    // ✅ OPCIÓN B: TODO LOCALHOST (Para desarrollo)
+    // OPCIÓN B: TODO LOCALHOST (Para desarrollo)
     // private static final String KEYCLOAK_TOKEN_URL = "http://localhost:8081/realms/tpi-backend/protocol/openid-connect/token";
     // private static final String CLIENTES_SYNC_URL = "http://localhost:8082/api/v1/clientes/sincronizar";
     // private static final String REDIRECT_URI = "http://localhost:8080/api/login/oauth2/code/keycloak";
 
     private static final String CLIENT_ID = "tpi-backend-client";
-
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-
     // =============================================
-    //  🚀 CALLBACK DE KEYCLOAK (AUTENTICACIÓN)
+    //  CALLBACK DE KEYCLOAK (AUTENTICACIÓN)
     // =============================================
     @SuppressWarnings("null")
     @GetMapping("/api/login/oauth2/code/keycloak")
@@ -142,7 +140,7 @@ public class AuthController {
         System.out.println("===============================================");
 
         return """
-                <h2>✅ Login exitoso! Usuario sincronizado.</h2>
+                <h2>Login exitoso! Usuario sincronizado.</h2>
                 <p><b>Keycloak ID:</b> """ + keycloakId + "</p>" +
                 "<p><b>Email:</b> " + email + "</p>" +
                 "<a href='/'>Volver al inicio</a>";

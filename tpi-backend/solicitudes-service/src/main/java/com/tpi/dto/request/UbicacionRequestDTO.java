@@ -10,7 +10,7 @@ public record UbicacionRequestDTO(
     @Schema(
         description = "Dirección completa de la ubicación",
         example = "Av. Corrientes 1234, Microcentro",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         maxLength = 255
     )
     @NotBlank(message = "La dirección es requerida")
@@ -19,7 +19,7 @@ public record UbicacionRequestDTO(
     @Schema(
         description = "Nombre descriptivo de la ubicación",
         example = "Depósito Central Buenos Aires",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         maxLength = 100
     )
     @NotBlank(message = "El nombre es requerido")
@@ -28,7 +28,7 @@ public record UbicacionRequestDTO(
     @Schema(
         description = "Coordenada de latitud geográfica",
         example = "-34.603722",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         minimum = "-90.0",
         maximum = "90.0"
     )
@@ -38,7 +38,7 @@ public record UbicacionRequestDTO(
     @Schema(
         description = "Coordenada de longitud geográfica", 
         example = "-58.381592",
-        required = true,
+        requiredMode = Schema.RequiredMode.REQUIRED,
         minimum = "-180.0",
         maximum = "180.0"
     )
@@ -52,7 +52,7 @@ public record UbicacionRequestDTO(
     @Schema(
         description = "ID del tipo de ubicación. Valores: 1=Depósito, 2=Puerto, 3=Aeropuerto, 4=Cliente",
         example = "1",
-        required = true
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NotNull(message = "El ID del tipo de ubicación es requerido")
     Long tipoId  

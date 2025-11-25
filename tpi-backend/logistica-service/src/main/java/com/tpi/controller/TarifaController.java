@@ -1,6 +1,7 @@
 package com.tpi.controller;
 
 import com.tpi.dto.request.ActualizarTarifaRequest;
+import com.tpi.dto.request.TarifaRequest;
 import com.tpi.model.Tarifa;
 import com.tpi.service.TarifaService;
 
@@ -14,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,22 +68,30 @@ public class TarifaController {
         @Parameter(description = "Nombre de la tarifa", example = "ESTANDAR")
         @RequestParam String nombre
     ) {
-        return tarifaService.findByNombre(nombre)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Tarifa tarifa = tarifaService.findByNombre(nombre);
+        return ResponseEntity.ok(tarifa);
     }
 
+    /**
+     * Endpoint para registrar una nueva tarifa en el sistema.
+     */
     @Operation(
         summary = "Crear nueva tarifa",
-        description = "Registra una nueva tarifa en el sistema."
+        description = "Registra una nueva tarifa en el sistema a partir del payload recibido."
     )
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Tarifa creada correctamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos enviados en el request"),
+    })
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Tarifa crearTarifa(
-        @Parameter(description = "Datos de la tarifa a crear")
-        @RequestBody @Valid Tarifa tarifa
+        @Parameter(description = "Datos de la tarifa a crear", required = true)
+        @RequestBody @Valid TarifaRequest request
     ) {
-        return tarifaService.save(tarifa);
+        return tarifaService.crearTarifa(request);
     }
+
 
     @Operation(
         summary = "Actualizar tarifa parcialmente",

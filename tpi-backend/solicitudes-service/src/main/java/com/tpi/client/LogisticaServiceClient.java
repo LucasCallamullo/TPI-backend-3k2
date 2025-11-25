@@ -12,15 +12,18 @@ import com.tpi.dto.request.UbicacionRequestDTO;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.exception.MicroservicioNoDisponibleException;
 import com.tpi.service.SecurityContextService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+// import com.fasterxml.jackson.databind.JsonNode;    preguntar sobre uso de jackson por sobre DTO's ?¡
+// import com.fasterxml.jackson.databind.ObjectMapper;    Ejemplo linea 56
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LogisticaServiceClient {
     
@@ -34,12 +37,12 @@ public class LogisticaServiceClient {
      * Se utiliza para crear una ubicacion para asociar a la solicitud 
      */
     @SuppressWarnings("null")
-    public Long crearUbicacion(UbicacionRequestDTO ubicacionRequest) {
+    public UbicacionResponseDTO crearUbicacion(UbicacionRequestDTO ubicacionRequest) {
 
         try {
             String jwtToken = securityContextService.obtenerJwtToken();
             
-            String response = logisticaRestClient
+            UbicacionResponseDTO response = logisticaRestClient
                 .post()
                 // URL RELATIVA (sin host) BASE_URL + Path
                 .uri(UBICACIONES_PATH)   
@@ -47,11 +50,12 @@ public class LogisticaServiceClient {
                 .header("Authorization", "Bearer " + jwtToken)
                 .body(ubicacionRequest)
                 .retrieve()
-                .body(String.class);
+                .body(UbicacionResponseDTO.class);
             
-            ObjectMapper mapper = new ObjectMapper();
+            /* ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonResponse = mapper.readTree(response);
-            return jsonResponse.get("id").asLong();
+            return jsonResponse.get("id").asLong(); */
+            return response;
 
 
         } catch (HttpClientErrorException.NotFound e) {
@@ -110,11 +114,12 @@ public class LogisticaServiceClient {
      * Se utiliza para asginar una ruta a la solicitud
      */
     @SuppressWarnings("null")
-    public RutaAsignadaResponseDTO crearRutaParaSolicitud(
-        CrearRutaCompletaRequest request) {
+    public RutaAsignadaResponseDTO crearRutaParaSolicitud(CrearRutaCompletaRequest request) {
         try {
             String jwtToken = securityContextService.obtenerJwtToken();
+            log.info("=== INICIANDO LLAMADA A MS-LOGISTICA ===");
             
+            // Intento directo
             RutaAsignadaResponseDTO response = logisticaRestClient
                 .post()
                 .uri(RUTAS_PATH + "/asignar-a-solicitud")   
@@ -123,12 +128,18 @@ public class LogisticaServiceClient {
                 .body(request)
                 .retrieve()
                 .body(RutaAsignadaResponseDTO.class);
-                
+            
+            log.info("LLAMADA EXITOSA - Respuesta recibida");
             return response;
             
-        } catch (HttpClientErrorException e) {
+        } catch (Exception e) {
+            log.error("ERROR CAPTURADO EN LogisticaServiceClient crearRutaParaSolicitud:");
+            log.error("Tipo de error: {}", e.getClass().getName());
+            log.error("Mensaje: {}", e.getMessage());
+            log.error("Stack trace completo:", e);
+            
             throw new MicroservicioNoDisponibleException(
-                "MS-Logística: ", "error en fetch a rutas" , e);
+                "MS-Logística", "Error: " + e.getMessage(), e);
         }
     }
 
