@@ -87,4 +87,21 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
+
+    /**
+     * Maneja casos donde el camión no tiene capacidad suficiente
+     * para transportar el contenedor.
+     * Devuelve 400 BAD REQUEST.
+     */
+    @ExceptionHandler(CapacidadInsuficienteException.class)
+    public ResponseEntity<ErrorResponse> handleCapacidadInsuficiente(CapacidadInsuficienteException ex) {
+        log.warn("Capacidad insuficiente: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+            "CAPACIDAD_INSUFICIENTE",
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST.value()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
 }

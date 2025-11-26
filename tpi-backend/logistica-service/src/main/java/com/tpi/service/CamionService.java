@@ -1,15 +1,15 @@
 package com.tpi.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityNotFoundException;
 
 import com.tpi.repository.CamionRepository;
 
-import jakarta.persistence.EntityNotFoundException;
-
+import com.tpi.dto.external.ContenedorResponseDTO;
 import com.tpi.dto.request.ActualizarCamionRequest;
 import com.tpi.dto.request.CamionRequest;
+import com.tpi.exception.CapacidadInsuficienteException;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.model.Camion;
 import lombok.RequiredArgsConstructor;
@@ -145,5 +145,42 @@ public class CamionService {
             .build();
 
         return camionRepository.save(camion);
+    }
+
+    
+    /**
+     * Valida si el camión tiene capacidad suficiente para transportar
+     * el contenedor según peso y volumen.
+     *
+     * @param camion Camión a evaluar.
+     * @param contenedorDTO Datos del contenedor (peso y volumen).
+     * @return true si el camión soporta el peso y volumen del contenedor.
+     */
+    public void validarCapacidadVolumenYPeso(Camion camion, ContenedorResponseDTO contenedorDTO) {
+
+        if (camion == null || contenedorDTO == null) {
+            throw new IllegalArgumentException("Camión o contenedor no pueden ser null.");
+        }
+
+        if (camion.getCapacidadPesoKg() == null || camion.getCapacidadVolumenM3() == null) {
+            throw new IllegalStateException("El camión no tiene configuradas sus capacidades de peso o volumen.");
+        }
+
+        boolean cumplePeso = contenedorDTO.peso() <= camion.getCapacidadPesoKg();
+        boolean cumpleVolumen = contenedorDTO.volumen() <= camion.getCapacidadVolumenM3();
+
+        if (!cumplePeso) {
+            throw new CapacidadInsuficienteException(
+                "El camión no soporta el peso del contenedor. Peso contenedor: "
+                + contenedorDTO.peso() + ", Capacidad camión: " + camion.getCapacidadPesoKg()
+            );
+        }
+
+        if (!cumpleVolumen) {
+            throw new CapacidadInsuficienteException(
+                "El camión no soporta el volumen del contenedor. Volumen contenedor: "
+                + contenedorDTO.volumen() + ", Capacidad camión: " + camion.getCapacidadVolumenM3()
+            );
+        }
     }
 }

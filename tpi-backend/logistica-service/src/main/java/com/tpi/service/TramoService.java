@@ -7,8 +7,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.tpi.client.RoutingClient;
+import com.tpi.client.SolicitudClient;
+
+import com.tpi.dto.external.ContenedorResponseDTO;
 import com.tpi.dto.response.RouteResponse;
 import com.tpi.dto.response.RutasTramosCamionResponsesDTO.TramoConDetalles;
+
+import com.tpi.exception.EntidadNotFoundException;
+
+import com.tpi.model.Camion;
 import com.tpi.model.Deposito;
 import com.tpi.model.EstadoTramo;
 import com.tpi.model.Ruta;
@@ -26,7 +33,10 @@ public class TramoService {
     private final DepositoService depositoService;
     private final TipoTramoService tipoTramoService;
     private final EstadoTramoService estadoTramoService;
+    private final CamionService camionService;
+
     private final RoutingClient routingClient;
+    private final SolicitudClient solicitudClient;
 
     /**
      * Genera automáticamente los tramos de una ruta en función de:
@@ -62,7 +72,7 @@ public class TramoService {
         // Caso 1: NO hay depósitos intermedios → tramo directo
         // ============================================================
         // Paso 1: Determinar estado inicial del tramo (ASiGNADO)
-        EstadoTramo estado = estadoTramoService.findByNombre("ASIGNADO");
+        EstadoTramo estado = estadoTramoService.findByNombre("ESTIMADO");
 
         if (ubicacionesDepositos.isEmpty()) {
 
@@ -234,5 +244,78 @@ public class TramoService {
     public List<Tramo> tramosPorRutaId(Long rutaId){
         return tramoRepository.findByRutaIdOrderByOrdenAsc(rutaId);
     }
+
+
+    /**
+     * Obtiene un tramo por su ID.
+     *
+     * @param id identificador único del tramo
+     * @return Tramo encontrado
+     * @throws EntidadNotFoundException si no existe un tramo con el ID dado
+     */
+    @SuppressWarnings("null")
+    public Tramo getById(Long id) {
+        return tramoRepository.findById(id)
+            .orElseThrow(() -> new EntidadNotFoundException("Tramo no encotrado con id: ", id));
+    }
+
+    /**
+     * Guarda o actualiza un tramo en la base de datos.
+     *
+     * @param tramo entidad Tramo a persistir
+     * @return Tramo guardado o actualizado
+     */
+    @SuppressWarnings("null")
+    public Tramo save(Tramo tramo) {
+        return tramoRepository.save(tramo);
+    }
+
+    /**
+     * Obtiene todos los tramos registrados.
+     *
+     * @return lista de todos los tramos
+     */
+    public List<Tramo> findAll() {
+        return tramoRepository.findAll();
+    }
+
+    /**
+     * Asigna un camión existente a un tramo específico.
+     *
+     * @param tramoId ID del tramo al cual se asignará el camión
+     * @param camionId ID del camión que será asignado
+     * @return TramoConDetalles DTO con la información del tramo actualizado
+     * @throws EntidadNotFoundException si el tramo o camión no existen
+     */
+    public TramoConDetalles asignarCamionATramo(Long tramoId, Long camionId) {
+        // 1. Obtener el tramo
+        Tramo tramo = this.getById(tramoId);
+
+        // 2. Obtener la ruta asociada al tramo
+        Ruta ruta = tramo.getRuta();
+
+        // 3. Consultar información del contenedor desde el microservicio de solicitudes
+        ContenedorResponseDTO contenedorDTO = solicitudClient.obtenerInfoContenedor(ruta.getSolicitudId());
+
+        // 4. Obtener el camión
+        Camion camion = camionService.findById(camionId);
+
+        // 5. Validar capacidad (peso y volumen) sino propaga error
+        camionService.validarCapacidadVolumenYPeso(camion, contenedorDTO);
+
+        // 6. Asignar camión al tramo
+
+        // Paso 6.1: Determinar estado inicial del tramo (ASiGNADO)
+        EstadoTramo estado = estadoTramoService.findByNombre("ASIGNADO");
+        tramo.setCamion(camion);
+        tramo.setEstado(estado);
+
+        // 7. Persistir cambios
+        tramoRepository.save(tramo);
+
+        // 8. Devolver DTO con detalles
+        return TramoConDetalles.of(tramo);
+    }
+
 
 }

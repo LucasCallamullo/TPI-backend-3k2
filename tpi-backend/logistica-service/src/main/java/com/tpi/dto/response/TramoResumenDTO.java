@@ -1,6 +1,7 @@
 package com.tpi.dto.response;
 
 import com.tpi.dto.response.UbicacionDTOs.UbicacionResponseDTO;
+import com.tpi.model.EstadoTramo;
 import com.tpi.model.TipoTramo;
 import com.tpi.model.Tramo;
 
@@ -19,7 +20,7 @@ public record TramoResumenDTO(
 
         Double horas = round2(tramo.getDuracionEstimadaSegundos());
         TipoTramoDTO tipoDto = TipoTramoDTO.fromEntity(tramo.getTipo());
-        EstadoTramoDTO estadoDto = EstadoTramoDTO.fromEntity(tramo.getTipo());
+        EstadoTramoDTO estadoDto = EstadoTramoDTO.fromEntity(tramo.getEstado());
 
         return new TramoResumenDTO(
             tramo.getId(),
@@ -50,7 +51,7 @@ public record TramoResumenDTO(
         Long id,
         String nombre
     ) {
-        public static EstadoTramoDTO fromEntity(TipoTramo tipo) {
+        public static EstadoTramoDTO fromEntity(EstadoTramo tipo) {
             return new EstadoTramoDTO(tipo.getId(), tipo.getNombre());
         }
     }

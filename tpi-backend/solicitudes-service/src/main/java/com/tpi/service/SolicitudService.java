@@ -48,7 +48,7 @@ public class SolicitudService {
 
     private final LogisticaServiceClient logisticaServiceClient;
     private final ClientesServiceClient clientesServiceClient;
-    private final SecurityContextService securityContextService;
+    // private final SecurityContextService securityContextService;
     
     /**
      * Metodo para crear solicitud con solo contenedor en la peticion
@@ -271,9 +271,13 @@ public class SolicitudService {
      * @throws EntidadNotFoundException si la solicitud no existe.
      */
     public SolicitudWithUbicacionAndRutaResponseDTO seguimientoSolicitud(Long solicitudId) {
+        // Por el momento se hizo asi para no dividir en dos endpoints la accion de consulta
+
         // 1. Validar que el cliente solo pueda ver SUS propias solicitudes
-        String clienteId = securityContextService.obtenerClienteIdDesdeToken();
-        Solicitud solicitud = this.findByIdAndClienteId(solicitudId, clienteId);
+        // String clienteId = securityContextService.obtenerClienteIdDesdeToken();
+
+        // Solicitud solicitud = this.findByIdAndClienteId(solicitudId, clienteId);
+        Solicitud solicitud = this.findById(solicitudId);
         
         // 2. Obtener ubicaciones desde MS-LOGISTICA
         UbicacionResponseDTO origen = logisticaServiceClient.obtenerUbicacionPorId(solicitud.getOrigenId());

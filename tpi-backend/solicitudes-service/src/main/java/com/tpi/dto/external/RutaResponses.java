@@ -67,8 +67,8 @@ public class RutaResponses {
         Integer orden,
         UbicacionResponseDTO origen,
         UbicacionResponseDTO destino,
-        String tipo,
-        String estado,
+        TipoTramoDTO tipo,
+        EstadoTramoDTO estado,
         Double costoAproximado,
         Double costoReal,
         Integer diasEstadia,
@@ -81,6 +81,13 @@ public class RutaResponses {
     public record CamionResponse(
         Long id,
         String dominio,
-        String nombreConductor
+        String nombreConductor,
+
+        Boolean disponible,
+        Double costoPorKm,
+        Double consumoCombustibleLx100km,
+        String modelo,
+        Double capacidadPesoKg,
+        Double capacidadVolumenM3
     ) {}
 }

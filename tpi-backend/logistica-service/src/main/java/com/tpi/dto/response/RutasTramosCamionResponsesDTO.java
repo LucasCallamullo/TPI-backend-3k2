@@ -6,6 +6,8 @@ import java.util.List;
 import com.tpi.model.Camion;
 import com.tpi.model.Ruta;
 import com.tpi.model.Tramo;
+import com.tpi.dto.response.TramoResumenDTO.EstadoTramoDTO;
+import com.tpi.dto.response.TramoResumenDTO.TipoTramoDTO;
 import com.tpi.dto.response.UbicacionDTOs.UbicacionResponseDTO;;
 
 public class RutasTramosCamionResponsesDTO {
@@ -33,8 +35,8 @@ public class RutasTramosCamionResponsesDTO {
         Integer orden,
         UbicacionResponseDTO origen,
         UbicacionResponseDTO destino,
-        String tipo,
-        String estado,
+        TipoTramoDTO tipo,
+        EstadoTramoDTO estado,
         Double costoAproximado,
         Double costoReal,
         Integer diasEstadia,
@@ -44,13 +46,19 @@ public class RutasTramosCamionResponsesDTO {
         CamionResponse camion
     ) {
         public static TramoConDetalles of(Tramo tramo) {
+
+
+            TipoTramoDTO tipo = TipoTramoDTO.fromEntity(tramo.getTipo());
+            EstadoTramoDTO estado = EstadoTramoDTO.fromEntity(tramo.getEstado());
+
+
             return new TramoConDetalles(
                 tramo.getId(),
                 tramo.getOrden(),
                 UbicacionResponseDTO.fromEntity(tramo.getOrigen()),  // ← Conversión aquí
                 UbicacionResponseDTO.fromEntity(tramo.getDestino()), // ← Conversión aquí
-                tramo.getTipo().getNombre(),
-                tramo.getEstado().getNombre(),
+                tipo,
+                estado,
                 tramo.getCostoAproximado(),
                 tramo.getCostoReal(),
                 tramo.getDiasEstadia(),
@@ -67,13 +75,26 @@ public class RutasTramosCamionResponsesDTO {
     public record CamionResponse(
         Long id,
         String dominio,
-        String nombreConductor
+        String nombreConductor,
+
+        Boolean disponible,
+        Double costoPorKm,
+        Double consumoCombustibleLx100km,
+        String modelo,
+        Double capacidadPesoKg,
+        Double capacidadVolumenM3
     ) {
         public static CamionResponse of(Camion camion) {
             return new CamionResponse(
                 camion.getId(),
                 camion.getDominio(),
-                camion.getNombreConductor()
+                camion.getNombreConductor(),
+                camion.getDisponible(),
+                camion.getCostoPorKm(),
+                camion.getConsumoCombustibleLx100km(),
+                camion.getModelo(),
+                camion.getCapacidadPesoKg(),
+                camion.getCapacidadVolumenM3()
             );
         }
     }
