@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -49,11 +51,16 @@ public class DepositoController {
         description = "Registra un nuevo depósito en el sistema con la información proporcionada."
     )
     @PostMapping
-    public Deposito crearDeposito(
+    public ResponseEntity<Deposito> crearDeposito(
             @Parameter(description = "Datos del depósito a crear")
             @RequestBody @Valid DepositoRequest request
     ) {
-        return depositoService.crearDeposito(request);
+
+        Deposito deposito = depositoService.crearDeposito(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED) // 201
+                .body(deposito);
     }
 
     

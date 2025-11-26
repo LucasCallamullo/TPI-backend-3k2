@@ -3,6 +3,7 @@ package com.tpi.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -11,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
+
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,9 @@ public class ResourceServerConfig {
                     "/webjars/**"
                 ).permitAll()
 
+                // POST /clientes: cualquiera puede registrarse
+                .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()
+
                 // endpoints de pruebas ver si esta actuator en el pom.xml
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/info").permitAll()
@@ -70,8 +75,12 @@ public class ResourceServerConfig {
                 .requestMatchers("/api/v1/clientes/me").hasRole("CLIENTE")
 
                 // Endpoints para ADMIN (solo administradores)
-                .requestMatchers("/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "ADMIN")
-                .requestMatchers("/api/v1/clientes").hasRole("ADMIN")
+
+                // GET /clientes/{id}: solo el cliente correspondiente o admin
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "ADMIN")
+
+                // GET /clientes (todos): solo admin
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes").hasRole("ADMIN")
 
                 .anyRequest().authenticated() 
             )

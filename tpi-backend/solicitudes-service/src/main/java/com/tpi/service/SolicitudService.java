@@ -16,7 +16,9 @@ import com.tpi.dto.external.RutaResponses.RutaTramosCamionResponse;
 import com.tpi.dto.external.UbicacionResponses.UbicacionResponseDTO;
 import com.tpi.dto.request.AsignarRutaRequest;
 import com.tpi.dto.request.CrearRutaCompletaRequest;
-import com.tpi.dto.request.SolicitudCompletaRequestDTO;
+import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudClienteRequestDTO;
+import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudCompletaRequestDTO;
+
 import com.tpi.dto.response.ContenedorResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.ClienteDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudResponseDTO;
@@ -60,10 +62,51 @@ public class SolicitudService {
         UbicacionResponseDTO destino = logisticaServiceClient.crearUbicacion(request.destino());
         
         // 3. Obtener Cliente 
-        ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(keycloakId);
+        // ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(keycloakId);
+        ClienteDTO cliente = clientesServiceClient.crearCliente(request.cliente());
 
         // 3. Crear contenedor en caso de ser necesario
         Contenedor contenedor = contenedorService.getOrCreate(request.contenedor(), keycloakId);
+        
+        // 4. Obtener estado
+        EstadoSolicitud estadoBorrador = estadoSolicitudService.findByNombre("BORRADOR");
+        
+        // 5. Crear solicitud (SOLO lógica de dominio)
+        Solicitud solicitud = Solicitud.builder()
+            .clienteId(cliente.id())    // Keycloack Id del cliente creado utilizado como id en base de datos
+            .contenedor(contenedor)
+            .origenId(origen.id())
+            .destinoId(destino.id())
+            .estado(estadoBorrador)
+            .costoEstimado(0.0)    // seteados en default 0.0 otro endpoint se encarga
+            .tiempoEstimadoHoras(0.0)
+            .distanciaTotalKM(0.0)
+            .build();
+            
+        Solicitud saved = solicitudRepository.save(solicitud);
+        
+        return SolicitudWithUbicacionResponseDTO.fromEntity(
+            saved, estadoBorrador, origen, destino, cliente
+        );
+    }
+
+
+    /**
+     * Metodo para crear solicitud desde  el cliente
+     */
+    @SuppressWarnings("null")
+    public SolicitudWithUbicacionResponseDTO crearSolicitudCliente(
+        SolicitudClienteRequestDTO request, String keycloakId) {
+        
+        // 2. Crear ubicaciones a través del ms logistica y preparar respuesta
+        UbicacionResponseDTO origen = logisticaServiceClient.crearUbicacion(request.origen());
+        UbicacionResponseDTO destino = logisticaServiceClient.crearUbicacion(request.destino());
+        
+        // 3. Obtener Cliente 
+        ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(keycloakId);
+
+        // 3. Crear contenedor en caso de ser necesario
+        Contenedor contenedor = contenedorService.findById(request.contenedorId());
         
         // 4. Obtener estado
         EstadoSolicitud estadoBorrador = estadoSolicitudService.findByNombre("BORRADOR");
@@ -188,7 +231,7 @@ public class SolicitudService {
         CostosEstimadosDTO costos = logisticaServiceClient.calcularCostosEstimados(solicitudId);
         
         // 3. Actualizar valores estimados
-        solicitud.setCostoEstimado(costos.getCostoTotal());
+        solicitud.setCostoEstimado(costos.getCostoEstimado());
         // solicitud.setTiempoEstimadoHoras(costos.getTiempoEstimadoSegundos() / 3600.0);
         this.save(solicitud);
 

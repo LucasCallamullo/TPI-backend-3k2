@@ -89,7 +89,7 @@ public class ContenedorController {
         )
         @PathVariable Long id) {
         
-        ContenedorResponseDTO contenedor = contenedorService.findById(id);
+        ContenedorResponseDTO contenedor = contenedorService.getDTOById(id);
         return ResponseEntity.ok(contenedor);
     }
 

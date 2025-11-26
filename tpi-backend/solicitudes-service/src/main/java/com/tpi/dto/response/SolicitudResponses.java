@@ -176,8 +176,8 @@ public class SolicitudResponses {
         @Schema(description = "Costo estimado del transporte", example = "45000.50")
         Double costoEstimado,
         
-        @Schema(description = "Tiempo estimado de entrega", example = "48 horas")
-        Double tiempoEstimado,
+        @Schema(description = "Tiempo estimado en horas de entrega", example = "48 horas")
+        Double tiempoEstimadoHoras,
         
         @Schema(description = "Detalles completos de la ruta asignada")
         RutaAsignadaResponseDTO ruta

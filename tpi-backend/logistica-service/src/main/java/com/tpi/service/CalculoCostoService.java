@@ -249,6 +249,7 @@ public class CalculoCostoService {
         
         // Inicializar acumuladores
         Double costoGestionTotal = 0.0;
+        Double distanciaTotal = 0.0;
         Double costoCamionTotal = 0.0;
         Double costoCombustibleTotal = 0.0;
         Double costoEstadiaTotal = 0.0;
@@ -277,29 +278,51 @@ public class CalculoCostoService {
                 costoEstadiaTotal += tramo.getCostoEstadia();
             }
 
-            tiempoSegundosTotal += tramo.getDuracionEstimadaSegundos();
+            // E. acumuladores totales
+            if (tramo.getDuracionEstimadaSegundos() != null) {
+                tiempoSegundosTotal += tramo.getDuracionEstimadaSegundos();
+            }
+
+            if (tramo.getDistanciaKm() != null) {
+                distanciaTotal += tramo.getDistanciaKm();
+            }
         }
         
         // Calcular total
         Double costoTotal = costoGestionTotal + costoCamionTotal + 
                            costoCombustibleTotal + costoEstadiaTotal;
+
+        // Calcular en horas para mas info
+        Double totalHoras = tiempoSegundosTotal / 3600.0;
         
         return CostosEstimadosDTO.builder()
             .rutaId(rutaId)
             .cantidadTramos(tramos.size())
             .cantidadCamionesCompatibles(cantidadCamionesCompatibles)
-            .costoGestion(costoGestionTotal)
-            .costoCamion(costoCamionTotal)
-            .costoCombustible(costoCombustibleTotal)
-            .costoEstadia(costoEstadiaTotal)
-            .costoTotal(costoTotal)
-            .costoPorKmPromedio(promedio.costoPorKmPromedio())
-            .consumoPromedio(promedio.consumoPromedio())
+            .costoGestion(this.round2(costoGestionTotal))
+            .costoCamion(this.round2(costoCamionTotal))
+            .costoCombustible(this.round2(costoCombustibleTotal))
+            .costoEstadia(this.round2(costoEstadiaTotal))
+
+            .consumoPromedio(this.round2(promedio.consumoPromedio()))
+            .costoPorKmPromedio(this.round2(promedio.costoPorKmPromedio()))
+            .distanciaTotalKm(this.round2(distanciaTotal))
+            .costoEstimado(this.round2(costoTotal))
+            
             .tiempoEstimadoSegundos(tiempoSegundosTotal)
+            .tiempoEstimadoHoras(this.round2(totalHoras))
             .esEstimado(true)
             .fechaCalculo(new Date())
             .build();
     }
+
+    /**
+     * Redondea un valor Double a dos decimales usando Math.round().
+     */
+    private Double round2(Double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
     
     // Records auxiliares
     private record PromedioCamiones(Double costoPorKmPromedio, Double consumoPromedio) {}

@@ -1,16 +1,19 @@
 package com.tpi.controller;
 
 import com.tpi.dto.ActualizarClienteRequest;
-import com.tpi.dto.ClienteDTO;
+import com.tpi.dto.responses.ClienteDTO;
 import com.tpi.dto.SincronizarClienteRequest;
+import com.tpi.dto.request.ClienteRequest;
 import com.tpi.model.Cliente;
 import com.tpi.service.ClienteService;
+import com.tpi.service.KeycloakService;
 
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,27 @@ public class ClienteController {
 
     private final ClienteService clienteService;
     private final SecurityContextService securityContextService;
+    private final KeycloakService keycloakService;
+
+    /* crear clientes */
+    @SuppressWarnings("null")
+    @PostMapping
+    public ResponseEntity<ClienteDTO> registrarCliente(@RequestBody @Valid ClienteRequest request) {
+
+        // 1. Crear usuario en Keycloak y obtener ID
+        String keycloakId = keycloakService.registrarUsuarioEnKeycloak(request);
+
+        // 2. Crear cliente en tu base local
+        Cliente cliente = clienteService.crearClienteDesdeRegistro(request, keycloakId);
+        ClienteDTO clienteDTO = ClienteDTO.fromEntity(cliente);
+
+        // 3. Responder 201 Created
+        URI location = URI.create("/clientes/" + cliente.getId());
+
+        return ResponseEntity
+                .created(location)
+                .body(clienteDTO);
+    }
 
     /*
      * Sincroniza la base de datos con el keycloackID para info extra de nosotros 
@@ -237,4 +261,5 @@ public class ClienteController {
     public List<Cliente> listarClientes() {
         return clienteService.getAllClientes();
     }
+
 }

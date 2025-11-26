@@ -85,11 +85,16 @@ public class TarifaController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Tarifa crearTarifa(
+    public ResponseEntity<Tarifa> crearTarifa(
         @Parameter(description = "Datos de la tarifa a crear", required = true)
         @RequestBody @Valid TarifaRequest request
     ) {
-        return tarifaService.crearTarifa(request);
+    
+        Tarifa deposito = tarifaService.crearTarifa(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED) // 201
+                .body(deposito);
     }
 
 

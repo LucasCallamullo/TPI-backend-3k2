@@ -11,7 +11,7 @@ public class RutaResponses {
     @Schema(description = "Respuesta con los detalles de la ruta asignada")
     public record RutaAsignadaResponseDTO(
         @Schema(description = "ID único de la ruta", example = "1")
-        Long rutaId,
+        Long id,
         
         @Schema(description = "Lista de tramos que componen la ruta")
         List<TramoResumenDTO> tramos,
@@ -30,13 +30,24 @@ public class RutaResponses {
     ) {}
     
     public record TramoResumenDTO(
-        Long tramoId,
+        Long id,
         Integer orden,
         UbicacionResponseDTO origen,
         UbicacionResponseDTO destino,
         Double distanciaKm,
         Double duracionHoras,
-        String tipoTramo
+        TipoTramoDTO tipo,
+        EstadoTramoDTO estado
+    ) {}
+
+    public record TipoTramoDTO(
+        Long id,
+        String nombre
+    ) {}
+
+    public record EstadoTramoDTO(
+        Long id,
+        String nombre
     ) {}
 
 

@@ -7,13 +7,14 @@ Ejemplo
   "nombre": "Depósito Central",
   "costoEstadiaPorDia": 2500.0,
   "ubicacion": {
-    "direccion": "Av. Siempre Viva 123",
-    "nombre": "Almacén 1",
-    "latitud": -34.603722,
-    "longitud": -58.381592,
-    "tipoId": 2
+    "direccion": "San Martín 2020, Santa Fe, Argentina",
+    "nombre": "Almacén Santa Fe Norte",
+    "latitud": -31.633329,
+    "longitud": -60.700438,
+    "tipo": 2
   }
 }
+
 */
 
 public record DepositoRequest(

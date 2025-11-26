@@ -1,5 +1,6 @@
 package com.tpi.client;
 
+import com.tpi.dto.external.ClienteRequestDTO;
 import com.tpi.dto.response.SolicitudResponses.ClienteDTO;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.exception.MicroservicioNoDisponibleException;
@@ -55,4 +56,28 @@ public class ClientesServiceClient {
             );
         }
     }
+
+
+    /**
+     * Obitnee una Cliente por el endpotin get id
+     */
+    @SuppressWarnings("null")
+    public ClienteDTO crearCliente(ClienteRequestDTO cliente) { 
+        try {
+            return clientesRestClient
+                .post()
+                .uri(CLIENTES_PATH)
+                .body(cliente)   // ← ¡Falta esto!
+                .retrieve()
+                .body(ClienteDTO.class);
+
+        } catch (HttpClientErrorException e) {
+            throw new MicroservicioNoDisponibleException(
+                "clientes-service", 
+                "crear Cliente: " + e.getStatusCode(), 
+                e
+            );
+        }
+    }
+
 }

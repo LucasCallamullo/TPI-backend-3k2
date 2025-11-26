@@ -8,7 +8,7 @@ public record CamionRequest(
     @Schema(
         description = "Dominio o patente única del camión",
         example = "AB123CD",
-        required = true
+        requiredMode = Schema.RequiredMode.REQUIRED
     )
     String dominio,
 

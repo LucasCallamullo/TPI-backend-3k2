@@ -61,6 +61,9 @@ public class TramoService {
         // ============================================================
         // Caso 1: NO hay depósitos intermedios → tramo directo
         // ============================================================
+        // Paso 1: Determinar estado inicial del tramo (ASiGNADO)
+        EstadoTramo estado = estadoTramoService.findByNombre("ASIGNADO");
+
         if (ubicacionesDepositos.isEmpty()) {
 
             // Paso 4: Obtener tipo de tramo ORIGEN_DESTINO
@@ -69,7 +72,7 @@ public class TramoService {
             // Paso 5: Crear tramo directo origen → destino (orden = 0)
             Tramo tramoDirecto = crearTramo(
                 ruta, origen, destino,
-                tipoTramo, 0
+                tipoTramo, 0, estado
             );
 
             // Paso 6: Guardar tramo directo en la lista
@@ -84,7 +87,7 @@ public class TramoService {
 
             Tramo primerTramo = crearTramo(
                 ruta, origen, ubicacionesDepositos.get(0),
-                tipoTramo, 0
+                tipoTramo, 0, estado
             );
             tramos.add(primerTramo);
 
@@ -95,7 +98,7 @@ public class TramoService {
 
                 Tramo tramoIntermedio = crearTramo(
                     ruta, ubicacionesDepositos.get(i), ubicacionesDepositos.get(i + 1),
-                    tipoTramito, i + 1
+                    tipoTramito, i + 1, estado
                 );
 
                 tramos.add(tramoIntermedio);
@@ -109,7 +112,8 @@ public class TramoService {
                 ubicacionesDepositos.get(ubicacionesDepositos.size() - 1),
                 destino,
                 tipoTramoLast,
-                ubicacionesDepositos.size()
+                ubicacionesDepositos.size(),
+                estado
             );
 
             tramos.add(ultimoTramo);
@@ -130,18 +134,16 @@ public class TramoService {
      * @param destino   Ubicación de destino.
      * @param tipoTramo Tipo de tramo (ORIGEN_DESTINO, DEPOSITO_DEPOSITO, etc.).
      * @param orden     Posición/orden del tramo dentro de la ruta.
+     * @param estado     Estado de tramo ("ESTIMADO", "ASIGNADO", "INICIADO", "FINALIZADO")
      * @return Tramo construido (sin persistir).
      */
     private Tramo crearTramo(Ruta ruta, Ubicacion origen, Ubicacion destino,
-                            TipoTramo tipoTramo, int orden) {
+                            TipoTramo tipoTramo, int orden, EstadoTramo estado) {
 
-        // Paso 1: Determinar estado inicial del tramo (ESTIMADO)
-        EstadoTramo estado = estadoTramoService.findByNombre("ESTIMADO");
-
-        // Paso 2: Intentar calcular distancia y duración usando el servicio de routing (OSRM)
+        // Paso 1: Intentar calcular distancia y duración usando el servicio de routing (OSRM)
         RouteResponse rutaInfo;
         try {
-            // 2.1 Llamada al cliente de routing pasando lat/lon de origen y destino
+            // 2 Llamada al cliente de routing pasando lat/lon de origen y destino
             rutaInfo = routingClient.calcularRutaCompleta(
                 origen.getLatitud(), origen.getLongitud(),
                 destino.getLatitud(), destino.getLongitud()

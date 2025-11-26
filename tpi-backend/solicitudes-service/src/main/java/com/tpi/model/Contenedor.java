@@ -28,7 +28,7 @@ public class Contenedor {
     
     @ManyToOne(fetch = FetchType.EAGER)        // No lazy
     @JoinColumn(name = "estado_contenedor_id")
-    private EstadoContenedor estado;
+    private EstadoContenedor estado;        // "DISPONIBLE", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO"
     
     @Builder.Default
     private LocalDateTime fechaCreacion = LocalDateTime.now();

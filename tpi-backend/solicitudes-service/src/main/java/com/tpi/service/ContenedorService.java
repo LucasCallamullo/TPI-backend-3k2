@@ -63,15 +63,26 @@ public class ContenedorService {
      * @throws EntidadNotFoundException si el contenedor no existe,
      *         lo que se traduce en un HTTP 404.
      */
-    public ContenedorResponseDTO findById(Long id) {
+    public ContenedorResponseDTO getDTOById(Long id) {
+        Contenedor contenedor = this.findById(id);
+        return ContenedorResponseDTO.fromEntity(contenedor);
+    }
 
-        Contenedor contenedor = contenedorRepository.findByIdWithEstado(id)
+    /**
+     * Obtiene un contenedor por su ID.
+     *
+     * @param id ID del contenedor a buscar.
+     * @return ContenedorResponseDTO con los datos del contenedor encontrado.
+     *
+     * @throws EntidadNotFoundException si el contenedor no existe,
+     *         lo que se traduce en un HTTP 404.
+     */
+    public Contenedor findById(Long id) {
+        return contenedorRepository.findByIdWithEstado(id)
             .orElseThrow(() -> new EntidadNotFoundException(
                 "Contenedor no encontrado con ID: ", 
                 id
             ));
-
-        return ContenedorResponseDTO.fromEntity(contenedor);
     }
 
 

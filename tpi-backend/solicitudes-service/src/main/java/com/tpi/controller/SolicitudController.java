@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tpi.dto.external.CostoFinalDTO;
 import com.tpi.dto.external.CostosEstimadosDTO;
+import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudClienteRequestDTO;
+import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudCompletaRequestDTO;
 import com.tpi.dto.request.AsignarRutaRequest;
-import com.tpi.dto.request.SolicitudCompletaRequestDTO;
+
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithRutaResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionAndRutaResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionResponseDTO;
@@ -31,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+
 
 import java.util.List;
 
@@ -212,7 +215,55 @@ public class SolicitudController {
         summary = "Crear nueva solicitud de transporte",
         description = """
             Registra una nueva solicitud de transporte completa. 
-            Incluye datos del contenedor, ubicación de origen y destino. 
+            Incluye datos del cliente, contenedor, ubicación de origen y destino. 
+            Orquesta la creación en ambos microservicios
+        """
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "201", description = "Solicitud creada exitosamente",
+            content = @Content(schema = @Schema(implementation = SolicitudWithUbicacionResponseDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "400", description = "Datos de entrada inválidos"
+        ),
+        @ApiResponse(
+            responseCode = "409", description = "Conflicto - Contenedor ya existe o datos duplicados"
+        )
+    })
+    @PostMapping("/completa")
+    public ResponseEntity<SolicitudWithUbicacionResponseDTO> crearSolicitud(
+        @Parameter(
+            description = "Datos completos para crear la solicitud", required = true,
+            schema = @Schema(implementation = SolicitudCompletaRequestDTO.class)
+        )
+        @Valid @RequestBody SolicitudCompletaRequestDTO request,
+        @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
+
+        // Aprovechamos el jwt para que el cliente tenga asociada una solicitud
+        // entendimos que el cliente era quien hacía la solicitud
+        String keycloakId = jwt.getSubject();
+        log.info("Creando solicitud para cliente con el admin Keycloak ID: {}", keycloakId);
+        
+        SolicitudWithUbicacionResponseDTO response = solicitudService.crearSolicitudCompleta(request, keycloakId);
+        
+        log.info("Solicitud creada exitosamente ID: {} para cliente: {}", 
+                response.id(), keycloakId);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+
+    /**
+     * POST - Registrar nueva solicitud de transporte completa
+     * Recibe todos los datos necesarios y orquesta la creación en ambos microservicios
+     * Incluye datos del contenedor, ubicación de origen y ubicación de destino
+     */
+    @Operation(
+        summary = "Crear nueva solicitud de transporte",
+        description = """
+            Registra una nueva solicitud de transporte completa. 
+            Incluye datos del cliente, contenedor, ubicación de origen y destino. 
             Orquesta la creación en ambos microservicios
         """
     )
@@ -234,7 +285,7 @@ public class SolicitudController {
             description = "Datos completos para crear la solicitud", required = true,
             schema = @Schema(implementation = SolicitudCompletaRequestDTO.class)
         )
-        @Valid @RequestBody SolicitudCompletaRequestDTO request,
+        @Valid @RequestBody SolicitudClienteRequestDTO request,
         @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
 
         // Aprovechamos el jwt para que el cliente tenga asociada una solicitud
@@ -242,7 +293,7 @@ public class SolicitudController {
         String keycloakId = jwt.getSubject();
         log.info("Creando solicitud para cliente Keycloak ID: {}", keycloakId);
         
-        SolicitudWithUbicacionResponseDTO response = solicitudService.crearSolicitudCompleta(request, keycloakId);
+        SolicitudWithUbicacionResponseDTO response = solicitudService.crearSolicitudCliente(request, keycloakId);
         
         log.info("Solicitud creada exitosamente ID: {} para cliente: {}", 
                 response.id(), keycloakId);

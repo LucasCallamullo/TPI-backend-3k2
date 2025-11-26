@@ -35,11 +35,11 @@ public class Tramo {
     
     @ManyToOne
     @JoinColumn(name = "tipo_tramo_id")
-    private TipoTramo tipo; // ORIGEN_DEPOSITO, DEPOSITO_DEPOSITO, DEPOSITO_DESTINO, ORIGEN_DESTINO
+    private TipoTramo tipo;     // ORIGEN_DEPOSITO, DEPOSITO_DEPOSITO, DEPOSITO_DESTINO, ORIGEN_DESTINO
     
     @ManyToOne
     @JoinColumn(name = "estado_tramo_id")
-    private EstadoTramo estado; // ESTIMADO, ASIGNADO, INICIADO, FINALIZADO
+    private EstadoTramo estado;     // ESTIMADO, ASIGNADO, INICIADO, FINALIZADO
     
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaHoraCreacion;    // se agrega el campo previo a persistir la entidad

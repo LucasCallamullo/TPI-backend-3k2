@@ -5,7 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.tpi.dto.ClienteDTO;
+import com.tpi.dto.responses.ClienteDTO;
+import com.tpi.dto.request.ClienteRequest;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.model.Cliente;
 import com.tpi.repository.ClienteRepository;
@@ -81,6 +82,18 @@ public class ClienteService {
                 // Paso 7: Guardar el nuevo cliente en la base de datos
                 return clienteRepository.save(nuevoCliente);
             });
+    }
+
+    public Cliente crearClienteDesdeRegistro(ClienteRequest request, String keycloakId) {
+
+        Cliente cliente = new Cliente();
+        cliente.setId(keycloakId); // el sub de Keycloak
+        cliente.setNombre(request.nombre());
+        cliente.setEmail(request.email());
+        cliente.setTelefono(request.telefono());
+        cliente.setDireccion(request.direccion());
+
+        return clienteRepository.save(cliente);
     }
 
 

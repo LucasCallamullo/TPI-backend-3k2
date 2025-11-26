@@ -59,6 +59,10 @@ public class ResourceServerConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/{id}/asignar-ruta")
                     .hasAnyRole("OPERADOR", "ADMIN")
 
+                // En caso de una solicitud completa, total
+                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/completa")
+                    .hasAnyRole("OPERADOR", "ADMIN")
+
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/{id}/calcular-costos-estimados")
                     .hasAnyRole("OPERADOR", "ADMIN")
 

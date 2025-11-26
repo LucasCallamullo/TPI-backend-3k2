@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Respuesta con los detalles de la ruta asignada")
 public record RutaAsignadaResponseDTO(
     @Schema(description = "ID único de la ruta", example = "1")
-    Long rutaId,
+    Long id,
     
     @Schema(description = "Lista de tramos que componen la ruta")
     List<TramoResumenDTO> tramos,

@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,12 +65,17 @@ public class CamionController {
         description = "Registra un nuevo camión en el sistema con la información proporcionada."
     )
     @PostMapping
-    public Camion crearCamion(
+    public ResponseEntity<Camion> crearCamion(
             @Parameter(description = "Datos del camión a crear", required = true)
             @RequestBody @Valid CamionRequest request
     ) {
-        return camionService.crearCamion(request);
+        Camion nuevo = camionService.crearCamion(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED) // 201
+                .body(nuevo);
     }
+
 
 
     /**
