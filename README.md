@@ -153,23 +153,8 @@
 
 <h2 id="contacto-section">💻 Contact Lucas Callamullo - Back-End Developer</h2>
 
-<div>
-  <a href="https://github.com/LucasCallamullo">
-    <img src="https://img.shields.io/badge/github-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
-  </a>&nbsp;&nbsp;
-  <a href="https://www.linkedin.com/in/lucas-callamullo/">
-    <img src="https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
-  </a>&nbsp;&nbsp;
-  <a href="mailto:lucascallamullo98@gmail.com">
-    <img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email">
-  </a>
-</div>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-<div>
-  <a href="https://github.com/LucasCallamullo">
-    <img src="https://img.shields.io/badge/Portfolio-%23000000.svg?style=for-the-badge&logo=react&logoColor=white" alt="Portfolio">
-  </a>&nbsp;&nbsp;
-  <a href="https://www.youtube.com/@lucas_clases_python">
-    <img src="https://img.shields.io/badge/YouTube%20-%23FF0000.svg?&style=for-the-badge&logo=YouTube&logoColor=white" alt="YouTube">
-  </a>
-</div>
+| [![GitHub](https://img.shields.io/badge/github-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white)](https://github.com/LucasCallamullo) | [![LinkedIn](https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/lucas-callamullo/) | [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:lucascallamullo98@gmail.com) |
+|:-:|:-:|:-:|
+
+| [![Portfolio](https://img.shields.io/badge/Portfolio-%23000000.svg?style=for-the-badge&logo=react&logoColor=white)](https://github.com/LucasCallamullo) | [![Youtube Badge](https://img.shields.io/badge/YouTube%20-%23FF0000.svg?&style=for-the-badge&logo=YouTube&logoColor=white)](https://www.youtube.com/@lucas_clases_python) |
+|:-:|:-:|
