@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 import com.tpi.client.ClientesServiceClient;
 import com.tpi.client.LogisticaServiceClient;
-import com.tpi.dto.external.CostoFinalDTO;
-import com.tpi.dto.external.CostosEstimadosDTO;
+import com.tpi.dto.external.CostoFinalDTOs.CostoFinalDTO;
+import com.tpi.dto.external.CostosEstimadosDTOs.CostosEstimadosDTO;
 import com.tpi.dto.external.RutaResponses.RutaAsignadaResponseDTO;
 import com.tpi.dto.external.RutaResponses.RutaTramosCamionResponse;
 import com.tpi.dto.external.UbicacionResponses.UbicacionResponseDTO;
@@ -22,6 +22,7 @@ import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudCompletaRequestDTO;
 import com.tpi.dto.response.ContenedorResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.ClienteDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudResponseDTO;
+import com.tpi.dto.response.SolicitudResponses.SolicitudUpdateEstadoResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithRutaResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionAndRutaResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionResponseDTO;
@@ -65,8 +66,8 @@ public class SolicitudService {
         // ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(keycloakId);
         ClienteDTO cliente = clientesServiceClient.crearCliente(request.cliente());
 
-        // 3. Crear contenedor en caso de ser necesario
-        Contenedor contenedor = contenedorService.getOrCreate(request.contenedor(), keycloakId);
+        // 3. Crear contenedor admin
+        Contenedor contenedor = contenedorService.crearContenedorAdminSolicitud(request.contenedor(), keycloakId);
         
         // 4. Obtener estado
         EstadoSolicitud estadoBorrador = estadoSolicitudService.findByNombre("BORRADOR");
@@ -105,8 +106,10 @@ public class SolicitudService {
         // 3. Obtener Cliente 
         ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(keycloakId);
 
-        // 3. Crear contenedor en caso de ser necesario
+        // 3. Buscar contenedor, validarlo, actualizar estado de DISPONIBLE -> ASIGNADO
         Contenedor contenedor = contenedorService.findById(request.contenedorId());
+        contenedorService.validarDisponibilidad(contenedor);
+        contenedorService.actualizarEstado(contenedor, "ASIGNADO");
         
         // 4. Obtener estado
         EstadoSolicitud estadoBorrador = estadoSolicitudService.findByNombre("BORRADOR");
@@ -138,7 +141,7 @@ public class SolicitudService {
      * @return DTO con la información actualizada de la solicitud
      */
     @SuppressWarnings("null")
-    public SolicitudResponseDTO actualizarEstado(Long id, String nuevoEstado) {
+    public SolicitudUpdateEstadoResponseDTO actualizarEstado(Long id, String nuevoEstado) {
 
         // 1. Buscar la solicitud por ID; si no existe, lanza excepción 404
         Solicitud solicitud = solicitudRepository.findById(id)
@@ -151,7 +154,7 @@ public class SolicitudService {
         EstadoSolicitud estado = estadoSolicitudService.findByNombre(nuevoEstado);
 
         // 3. Obtener información del cliente desde el microservicio clientes
-        ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(solicitud.getClienteId());
+        // ClienteDTO cliente = clientesServiceClient.obtenerClientePorId(solicitud.getClienteId());
 
         // 4. Asignar el nuevo estado a la solicitud
         solicitud.setEstado(estado);
@@ -160,10 +163,9 @@ public class SolicitudService {
         Solicitud updated = solicitudRepository.save(solicitud);
 
         // 6. Construir y retornar el DTO de respuesta con la solicitud, estado y cliente
-        return SolicitudResponseDTO.fromEntity(updated, estado, cliente);
+        return SolicitudUpdateEstadoResponseDTO.fromEntity(updated);
     }
 
-    
     
     /**
      * Asigna una ruta a una solicitud existente, creando la ruta en MS-Logística
@@ -231,7 +233,7 @@ public class SolicitudService {
         CostosEstimadosDTO costos = logisticaServiceClient.calcularCostosEstimados(solicitudId);
         
         // 3. Actualizar valores estimados
-        solicitud.setCostoEstimado(costos.getCostoEstimado());
+        solicitud.setCostoEstimado(costos.resumen().costoTotal());
         // solicitud.setTiempoEstimadoHoras(costos.getTiempoEstimadoSegundos() / 3600.0);
         this.save(solicitud);
 
@@ -240,9 +242,14 @@ public class SolicitudService {
     }
 
 
-    /*
-    * Calcular costos estimados y asignarlos a la solicitud
-    */
+    /**
+     * Calcula los costos totales de una solicitud consultando a MS-Logística
+     * y actualiza la solicitud con esos valores.
+     *
+     * @param solicitudId ID de la solicitud.
+     * @return Un CostoFinalDTO con los valores calculados.
+     * @throws EntidadNotFoundException si la solicitud no existe.
+     */
     @SuppressWarnings("null")
     public CostoFinalDTO calcularCostosTotales(Long solicitudId) {
         log.info("Calculando costos estimados para solicitud ID: {}", solicitudId);
@@ -252,8 +259,8 @@ public class SolicitudService {
         Solicitud solicitud = solicitudRepository.findById(solicitudId)
             .orElseThrow(() -> new EntidadNotFoundException("Solicitud", solicitudId));
         
-        solicitud.setCostoFinal(costos.getCostoTotal());
-        solicitud.setTiempoReal(costos.getTiempoTotalSegundos()/3600.0);
+        solicitud.setCostoFinal(costos.resumen().costoTotal());
+        solicitud.setTiempoReal(costos.resumen().totalHoras());
         this.save(solicitud);
 
         log.info("Costos estimados calculados exitosamente para solicitud ID: {}", solicitudId);

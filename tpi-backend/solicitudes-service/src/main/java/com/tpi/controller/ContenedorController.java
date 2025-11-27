@@ -146,6 +146,7 @@ public class ContenedorController {
     @PostMapping
     public ResponseEntity<ContenedorResponseDTO> crearContenedor(
             @Valid @RequestBody ContenedorRequestDTO contenedorRequest) {
+                
         ContenedorResponseDTO contenedor = contenedorService.crearContenedor(contenedorRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(contenedor);
     }

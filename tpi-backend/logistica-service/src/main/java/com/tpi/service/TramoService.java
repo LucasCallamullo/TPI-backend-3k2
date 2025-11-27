@@ -10,7 +10,8 @@ import com.tpi.client.RoutingClient;
 import com.tpi.client.SolicitudClient;
 
 import com.tpi.dto.external.ContenedorResponseDTO;
-import com.tpi.dto.response.RouteResponse;
+import com.tpi.dto.external.RouteResponseDTOs.RouteAlternativeResponse;
+import com.tpi.dto.external.RouteResponseDTOs.RouteResponse;
 import com.tpi.dto.response.RutasTramosCamionResponsesDTO.TramoConDetalles;
 
 import com.tpi.exception.EntidadNotFoundException;
@@ -151,32 +152,17 @@ public class TramoService {
                             TipoTramo tipoTramo, int orden, EstadoTramo estado) {
 
         // Paso 1: Intentar calcular distancia y duración usando el servicio de routing (OSRM)
-        RouteResponse rutaInfo;
-        try {
-            // 2 Llamada al cliente de routing pasando lat/lon de origen y destino
-            rutaInfo = routingClient.calcularRutaCompleta(
-                origen.getLatitud(), origen.getLongitud(),
-                destino.getLatitud(), destino.getLongitud()
-            );
-        } catch (Exception e) {
-            // Paso 3: Si falla el servicio externo, aplicar fallback simple
-            // 3.1 Calcular distancia euclidiana aproximada (en km)
-            double distanciaFallback = calcularDistanciaEuclidiana(origen, destino);
+        // 2 Llamada al cliente de routing pasando lat/lon de origen y destino
+        RouteAlternativeResponse rutaInfo = routingClient.calcularRutaCompleta(
+            origen.getLatitud(), origen.getLongitud(),
+            destino.getLatitud(), destino.getLongitud()
+        );
 
-            // 3.2 Construir un RouteResponse mínimo con la información disponible
-            //      - distancia: aproximada (km)
-            //      - duracion: 0 (desconocida, se puede mejorar según criterio)
-            //      - dejamos lat/lon tal cual para trazabilidad
-            rutaInfo = new RouteResponse(
-                distanciaFallback,
-                0L,
-                origen.getLatitud(), origen.getLongitud(),
-                destino.getLatitud(), destino.getLongitud()
-            );
-        }
-
+        // Obtener la mejor ruta posible desde la respuesta
+        RouteResponse routeInfo = rutaInfo.rutas().get(rutaInfo.bestRuta());
+        
         // Paso 4: Construir y devolver el Tramo usando los valores calculados
-        double distanciaRedondeada = Math.round(rutaInfo.distanciaKm() * 100.0) / 100.0;
+        double distanciaRedondeada = Math.round(routeInfo.distanciaKm() * 100.0) / 100.0;
 
         return Tramo.builder()
             .ruta(ruta) // 4.1 Referencia a la ruta (por entidad/ID)
@@ -185,28 +171,9 @@ public class TramoService {
             .tipo(tipoTramo) // 4.4 Tipo de tramo
             .estado(estado) // 4.5 Estado inicial
             .distanciaKm(distanciaRedondeada) // 4.6 Distancia en km (desde OSRM o fallback)
-            .duracionEstimadaSegundos(rutaInfo.duracionSegundos()) // 4.7 Duración estimada en segundos INT
+            .duracionEstimadaSegundos(routeInfo.duracionSegundos()) // 4.7 Duración estimada en segundos INT
             .orden(orden) // 4.8 Orden para mantener secuencia de tramos
             .build();
-    }
-
-
-    /**
-     * Método de fallback: aproximación euclidiana entre dos puntos (lat/lon).
-     * Nota: Multiplicamos por ~111 para convertir grados de latitud/longitud a km
-     * (aprox. 1 grado ≈ 111 km). Es una aproximación válida para estimaciones rápidas.
-     *
-     * @param origen  Ubicación de origen.
-     * @param destino Ubicación de destino.
-     * @return Distancia aproximada en kilómetros.
-     */
-    private Double calcularDistanciaEuclidiana(Ubicacion origen, Ubicacion destino) {
-        // Paso 1: Diferencias en latitud y longitud (grados)
-        double latDiff = destino.getLatitud() - origen.getLatitud();
-        double lonDiff = destino.getLongitud() - origen.getLongitud();
-
-        // Paso 2: Distancia euclidiana en grados -> luego convertida a km (~111 km/grado)
-        return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111;
     }
 
 
@@ -271,6 +238,16 @@ public class TramoService {
     }
 
     /**
+     * Guarda en la base de datos todos los tramos recibidos.
+     *
+     * @param tramos lista de tramos a persistir en la base de datos.
+     */
+    @SuppressWarnings("null")
+    public void saveAll(List<Tramo> tramos) {
+        tramoRepository.saveAll(tramos);
+    }
+
+    /**
      * Obtiene todos los tramos registrados.
      *
      * @return lista de todos los tramos
@@ -317,5 +294,54 @@ public class TramoService {
         return TramoConDetalles.of(tramo);
     }
 
+    
+    /**
+     * Actualiza el estado de un tramo y sincroniza el estado de la solicitud asociada.
+     *
+     * @param id       ID del tramo a actualizar
+     * @param estadoId ID del nuevo estado del tramo
+     * @return DTO TramoConDetalles con la información actualizada del tramo
+     */
+    public TramoConDetalles actualizarEstado(Long id, Long estadoId) {
 
+        // -----------------------------
+        // 1. Obtener el tramo desde la base usando su ID
+        // -----------------------------
+        Tramo tramo = this.getById(id);
+
+        // -----------------------------
+        // 2. Obtener el nuevo estado del tramo usando el estadoId
+        // -----------------------------
+        EstadoTramo estado = estadoTramoService.findById(estadoId);
+
+        // -----------------------------
+        // 3. Asignar el nuevo estado al tramo
+        // -----------------------------
+        tramo.setEstado(estado);
+        this.save(tramo);
+
+        // -----------------------------
+        // 4. Obtener el ID de la solicitud asociada a la ruta del tramo
+        // -----------------------------
+        Long solicitudId = tramo.getRuta().getSolicitudId();
+
+        // -----------------------------
+        // 5. Llamar al cliente de solicitudes para actualizar el estado
+        //    de la solicitud asociada (ejemplo: "EN_TRANSITO")
+        // -----------------------------
+        if (estado.getNombre().equals("INICIADO")) {
+            solicitudClient.actualizarEstadoSolicitud(solicitudId, "EN_TRANSITO");
+        } else if (estado.getNombre().equals("FINALIZADO")) {
+            solicitudClient.actualizarEstadoSolicitud(solicitudId, "ENTREGADA");
+        }
+
+        // -----------------------------
+        // 6. Convertir el tramo actualizado a su DTO de detalles
+        // -----------------------------
+        TramoConDetalles tramoDto = TramoConDetalles.of(tramo);
+
+        // -----------------------------
+        // 7. Retornar el DTO con la información del tramo actua
+        return tramoDto;
+    }
 }

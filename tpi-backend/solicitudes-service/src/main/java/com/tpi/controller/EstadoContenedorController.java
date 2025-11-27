@@ -112,6 +112,7 @@ public class EstadoContenedorController {
     public ResponseEntity<EstadoContenedor> crearEstado(
         @Parameter(description = "Datos del estado de contenedor a crear")
         @Valid @RequestBody EstadoContenedor estadoContenedor) {
+            
         EstadoContenedor nuevoEstado = estadoContenedorService.save(estadoContenedor);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEstado);
     }

@@ -1,6 +1,8 @@
 package com.tpi.client;
 
 import com.tpi.dto.external.ContenedorResponseDTO;
+import com.tpi.dto.external.SolicitudResponseDTO;
+import com.tpi.dto.external.SolicitudUpdateEstadoResponseDTO;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.exception.MicroservicioNoDisponibleException;
 // import com.tpi.service.SecurityContextService;
@@ -39,6 +41,36 @@ public class SolicitudClient {
                 .header("Authorization", "Bearer " + jwtToken)        // Agregado
                 .retrieve()
                 .body(ContenedorResponseDTO.class);
+            
+            return solicitud;
+            
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Solicitud no encontrada: {}", solicitudId);
+            throw new EntidadNotFoundException("Solicitud", solicitudId);
+        } catch (Exception e) {
+            log.error("Error al obtener solicitud {}: {}", solicitudId, e.getMessage());
+            throw new MicroservicioNoDisponibleException(
+                "Error al obtener solicitud: ", e.getMessage(), e);
+        }
+    }
+
+
+    public SolicitudUpdateEstadoResponseDTO actualizarEstadoSolicitud(Long solicitudId, String estadoNombre) {
+        log.info("Obteniendo información del contenedor para solicitud ID: {}", solicitudId);
+        
+        try {
+            String jwtToken = securityContextService.obtenerJwtToken();
+            
+            SolicitudUpdateEstadoResponseDTO solicitud = solicitudesRestClient
+                .patch()
+                .uri(uriBuilder -> uriBuilder
+                    .path(SOLICITUD_PATH + "/{solicitudId}/estado")
+                    .queryParam("estado", estadoNombre)
+                    .build(solicitudId))
+                // .uri(SOLICITUD_PATH + "/{solicitudId}/estado?estado={estadoNombre}", solicitudId, estadoNombre)
+                .header("Authorization", "Bearer " + jwtToken)        // Agregado
+                .retrieve()
+                .body(SolicitudUpdateEstadoResponseDTO.class);
             
             return solicitud;
             

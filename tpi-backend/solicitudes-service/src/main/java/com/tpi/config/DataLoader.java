@@ -130,7 +130,7 @@ public class DataLoader implements CommandLineRunner {
 
     @SuppressWarnings("null")
     private void cargarEstadosContenedor() {
-        List<String> estados = Arrays.asList("DISPONIBLE", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO");
+        List<String> estados = Arrays.asList("DISPONIBLE", "ASIGNADO", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO");
         
         for (String nombre : estados) {
             if (estadoContenedorRepository.findByNombre(nombre).isEmpty()) {

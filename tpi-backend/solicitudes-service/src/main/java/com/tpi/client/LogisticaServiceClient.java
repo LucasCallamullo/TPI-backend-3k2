@@ -1,7 +1,7 @@
 package com.tpi.client;
 
-import com.tpi.dto.external.CostoFinalDTO;
-import com.tpi.dto.external.CostosEstimadosDTO;
+import com.tpi.dto.external.CostoFinalDTOs.CostoFinalDTO;
+import com.tpi.dto.external.CostosEstimadosDTOs.CostosEstimadosDTO;
 import com.tpi.dto.external.RutaResponses.RutaAsignadaResponseDTO;
 import com.tpi.dto.external.RutaResponses.RutaTramosCamionResponse;
 import com.tpi.dto.external.UbicacionResponses.UbicacionResponseDTO;

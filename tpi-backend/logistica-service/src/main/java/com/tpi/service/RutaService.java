@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.tpi.dto.CostoFinalDTO;
+import com.tpi.dto.CostoFinalDTOs.CostoFinalDTO;
 import com.tpi.dto.request.CrearRutaCompletaRequest;
-import com.tpi.dto.response.CostosEstimadosDTO;
+import com.tpi.dto.response.CostosEstimadosDTOs.CostosEstimadosDTO;
 import com.tpi.dto.response.RutaAsignadaResponseDTO;
 import com.tpi.dto.response.RutasTramosCamionResponsesDTO.RutaTramosCamionResponse;
 import com.tpi.dto.response.RutasTramosCamionResponsesDTO.TramoConDetalles;

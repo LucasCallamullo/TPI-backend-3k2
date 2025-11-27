@@ -1,9 +1,7 @@
 package com.tpi.controller;
 
 import com.tpi.dto.response.RutasTramosCamionResponsesDTO.TramoConDetalles;
-import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.model.Tramo;
-import com.tpi.repository.TramoRepository;
 import com.tpi.service.TramoService;
 
 import org.springframework.web.bind.annotation.*;
@@ -123,6 +121,17 @@ public class TramoController {
     ) {
         return tramoService.asignarCamionATramo(tramoId, camionId);
     }
+
+
+    @PatchMapping("/{id}/estado/{estadoId}")
+    public TramoConDetalles actualizarEstadoTramo(
+            @PathVariable Long id,
+            @PathVariable Long estadoId
+    ) {
+        // Llamás a tu servicio para actualizar el estado del tramo
+        return tramoService.actualizarEstado(id, estadoId);
+    }
+
 }
 
 

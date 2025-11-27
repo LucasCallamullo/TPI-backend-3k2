@@ -7,8 +7,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
-import com.tpi.dto.external.CostoFinalDTO;
-import com.tpi.dto.external.CostosEstimadosDTO;
+import com.tpi.dto.external.CostoFinalDTOs.CostoFinalDTO;
+import com.tpi.dto.external.CostosEstimadosDTOs.CostosEstimadosDTO;
 import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudClienteRequestDTO;
 import com.tpi.dto.request.SolicitudesRequestDTOs.SolicitudCompletaRequestDTO;
 import com.tpi.dto.request.AsignarRutaRequest;
@@ -18,7 +18,7 @@ import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionAndRutaResp
 import com.tpi.dto.response.SolicitudResponses.SolicitudWithUbicacionResponseDTO;
 import com.tpi.dto.response.ContenedorResponseDTO;
 import com.tpi.dto.response.SolicitudResponses.SolicitudResponseDTO;
-
+import com.tpi.dto.response.SolicitudResponses.SolicitudUpdateEstadoResponseDTO;
 import com.tpi.service.SolicitudService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -182,7 +182,7 @@ public class SolicitudController {
         )
     })
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<SolicitudResponseDTO> actualizarEstadoSolicitud(
+    public ResponseEntity<SolicitudUpdateEstadoResponseDTO> actualizarEstadoSolicitud(
             @Parameter(
                 description = "ID de la solicitud",
                 example = "1",
@@ -192,17 +192,17 @@ public class SolicitudController {
             @Parameter(
                 description = "Nuevo estado de la solicitud",
                 examples = {
-                    @ExampleObject(name = "Pendiente", value = "PENDIENTE"),
+                    @ExampleObject(name = "Pendiente", value = "BORRADOR"),
                     @ExampleObject(name = "Programada", value = "PROGRAMADA"),
-                    @ExampleObject(name = "En curso", value = "EN_CURSO"),
-                    @ExampleObject(name = "Completada", value = "COMPLETADA"),
+                    @ExampleObject(name = "En curso", value = "EN_TRANSITO"),
+                    @ExampleObject(name = "Completada", value = "ENTREGADA"),
                     @ExampleObject(name = "Cancelada", value = "CANCELADA")
                 },
                 required = true
             )
             @RequestParam String estado) {
         
-        SolicitudResponseDTO response = solicitudService.actualizarEstado(id, estado);
+        SolicitudUpdateEstadoResponseDTO response = solicitudService.actualizarEstado(id, estado);
         return ResponseEntity.ok(response);
     }
 

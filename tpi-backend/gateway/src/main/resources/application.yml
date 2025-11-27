@@ -45,17 +45,17 @@ spring:
         - id: solicitudes-entities-root
           uri: http://solicitudes-service:8083
           predicates:
-            - Path=/solicitudes, /contenedores
+            - Path=/solicitudes, /contenedores, /estados-contenedor, estados-solicitud
           filters:
-            - RewritePath=/(?<entity>solicitudes|contenedores), /api/v1/${entity}
+            - RewritePath=/(?<entity>solicitudes|contenedores|estados-contenedor|estados-solicitud), /api/v1/${entity}
 
         # Para todas las SUB-RUTAS
         - id: solicitudes-entities-all  
           uri: http://solicitudes-service:8083
           predicates:
-            - Path=/solicitudes/**, /contenedores/**
+            - Path=/solicitudes/**, /contenedores/**, /estados-contenedor/**, /estados-solicitud/**
           filters:
-            - RewritePath=/(?<entity>solicitudes|contenedores)/(?<segment>.*), /api/v1/${entity}/${segment}
+            - RewritePath=/(?<entity>solicitudes|contenedores|estados-contenedor|estados-solicitud)/(?<segment>.*), /api/v1/${entity}/${segment}
 
 
         # =========================================================
@@ -100,17 +100,17 @@ spring:
         - id: logistica-entities-roott
           uri: http://logistica-service:8084
           predicates:
-            - Path=/tramos, /ubicaciones, /tipo-tramos, /tipos-ubicacion, /estado-tramos
+            - Path=/tramos, /ubicaciones, /tipo-tramos, /tipos-ubicacion, /estados-tramo
           filters:
-            - RewritePath=/(?<entity>tramos|ubicaciones|tipo-tramos|tipos-ubicacion|estado-tramos), /api/v1/${entity}
+            - RewritePath=/(?<entity>tramos|ubicaciones|tipo-tramos|tipos-ubicacion|estados-tramo), /api/v1/${entity}
 
         # Para todas las SUB-RUTAS
         - id: logistica-entities-alll 
           uri: http://logistica-service:8084
           predicates:
-            - Path=/tramos/**, /ubicaciones/**, /tipo-tramos/**, /tipos-ubicacion/**, estado-tramos/**
+            - Path=/tramos/**, /ubicaciones/**, /tipo-tramos/**, /tipos-ubicacion/**, estados-tramo/**
           filters:
-            - RewritePath=/(?<entity>tramos|ubicaciones|tipo-tramos|tipos-ubicacion|estado-tramos)/(?<segment>.*), /api/v1/${entity}/${segment}
+            - RewritePath=/(?<entity>tramos|ubicaciones|tipo-tramos|tipos-ubicacion|estados-tramo)/(?<segment>.*), /api/v1/${entity}/${segment}
 
         # =========================================================
         # SWAGGER LOGISTICA

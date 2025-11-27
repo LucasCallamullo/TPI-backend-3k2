@@ -11,32 +11,56 @@ public record TramoResumenDTO(
     UbicacionResponseDTO origen,
     UbicacionResponseDTO destino,
     Double distanciaKm,
+    Long duracionSegundos,
     Double duracionHoras,
     TipoTramoDTO tipo,
     EstadoTramoDTO estado
-    // String tipoTramo
 ) {
+    /**
+     * Convierte una entidad Tramo a un DTO de resumen (TramoResumenDTO).
+     * Este DTO resume información esencial del tramo: ubicaciones, distancia,
+     * duración estimada, horas calculadas, tipo y estado.
+     *
+     * @param tramo Entidad Tramo a transformar.
+     * @return Instancia de TramoResumenDTO con los datos mapeados.
+     */
     public static TramoResumenDTO fromEntity(Tramo tramo) {
 
-        Double horas = round2(tramo.getDuracionEstimadaSegundos());
+        // Convertir segundos estimados de duración a horas (double).
+        // Si es null, se asume 0.
+        Double horas = tramo.getDuracionEstimadaSegundos() != null ? 
+            tramo.getDuracionEstimadaSegundos() / 3600.0 : 0.0;
+
+        // Convertir el tipo de tramo a su DTO correspondiente.
         TipoTramoDTO tipoDto = TipoTramoDTO.fromEntity(tramo.getTipo());
+
+        // Convertir el estado del tramo a su DTO correspondiente.
         EstadoTramoDTO estadoDto = EstadoTramoDTO.fromEntity(tramo.getEstado());
 
         return new TramoResumenDTO(
             tramo.getId(),
             tramo.getOrden(),
+
+            // Convertir ubicación origen (si existe)
             tramo.getOrigen() != null ? 
                 UbicacionResponseDTO.fromEntity(tramo.getOrigen()) : null,
+
+            // Convertir ubicación destino (si existe)
             tramo.getDestino() != null ? 
                 UbicacionResponseDTO.fromEntity(tramo.getDestino()) : null,
+
             tramo.getDistanciaKm(),
-            horas,
+            tramo.getDuracionEstimadaSegundos(),
+
+            // Redondear las horas estimadas a 2 decimales
+            Math.round(horas * 100.0) / 100.0,
+
             tipoDto,
             estadoDto
         );
     }
 
-
+    
     public record TipoTramoDTO(
         Long id,
         String nombre
@@ -54,14 +78,5 @@ public record TramoResumenDTO(
         public static EstadoTramoDTO fromEntity(EstadoTramo tipo) {
             return new EstadoTramoDTO(tipo.getId(), tipo.getNombre());
         }
-    }
-
-    /**
-     * Redondea un valor Double a dos decimales usando Math.round().
-     */
-    private static Double round2(Long value) {
-        if (value == null) return 0.0;
-
-        return Math.round(value * 100.0) / 100.0;
     }
 }

@@ -16,8 +16,13 @@ public class KeycloakService {
 
     private final KeycloakAdminClient keycloakAdminClient;
 
+    /**
+     * Registra un nuevo usuario en Keycloak a partir de la información de un cliente.
+     *
+     * @param request DTO con los datos del cliente (nombre, email, password, etc.)
+     * @return ID del usuario creado en Keycloak
+     */
     public String registrarUsuarioEnKeycloak(ClienteRequest request) {
-
         // 1. Crear DTO compatible con Keycloak
         KeycloakUserDto user = new KeycloakUserDto(
             request.email(),     // username = email

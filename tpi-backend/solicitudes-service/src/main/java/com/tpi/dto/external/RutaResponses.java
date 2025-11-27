@@ -35,6 +35,7 @@ public class RutaResponses {
         UbicacionResponseDTO origen,
         UbicacionResponseDTO destino,
         Double distanciaKm,
+        Long duracionSegundos,
         Double duracionHoras,
         TipoTramoDTO tipo,
         EstadoTramoDTO estado

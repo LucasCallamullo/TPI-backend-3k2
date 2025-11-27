@@ -42,21 +42,46 @@ public class ClienteController {
     private final SecurityContextService securityContextService;
     private final KeycloakService keycloakService;
 
-    /* crear clientes */
+    /**
+     * Registrar cliente nuevo mediante keyloack autenticacion, sincroniza los datos
+     * 
+     * @param request
+     * @return
+     */
     @SuppressWarnings("null")
     @PostMapping
+    @Operation(
+        summary = "Registrar un nuevo cliente",
+        description = "Crea un cliente nuevo en la base de datos y un usuario correspondiente en Keycloak"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Cliente creado exitosamente",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ClienteDTO.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos inválidos en la solicitud",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor al crear cliente",
+            content = @Content
+        )
+    })
     public ResponseEntity<ClienteDTO> registrarCliente(@RequestBody @Valid ClienteRequest request) {
 
         // 1. Crear usuario en Keycloak y obtener ID
         String keycloakId = keycloakService.registrarUsuarioEnKeycloak(request);
 
-        // 2. Crear cliente en tu base local
+        // 2. Crear cliente en la base local
         Cliente cliente = clienteService.crearClienteDesdeRegistro(request, keycloakId);
         ClienteDTO clienteDTO = ClienteDTO.fromEntity(cliente);
 
         // 3. Responder 201 Created
         URI location = URI.create("/clientes/" + cliente.getId());
-
         return ResponseEntity
                 .created(location)
                 .body(clienteDTO);

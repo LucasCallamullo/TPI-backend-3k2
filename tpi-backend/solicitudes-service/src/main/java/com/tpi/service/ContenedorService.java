@@ -85,6 +85,38 @@ public class ContenedorService {
             ));
     }
 
+    /**
+     * Valida que el contenedor esté disponible para operar.
+     * 
+     * @param contenedor Contenedor a validar.
+     * @throws ContenedorNoDisponibleException si el contenedor no está en estado "DISPONIBLE".
+     */
+    public void validarDisponibilidad(Contenedor contenedor) {
+
+        // Obtener el nombre del estado actual del contenedor
+        String estado = contenedor.getEstado().getNombre();
+
+        // Comparación correcta con equals(), no con "!="
+        if (!"DISPONIBLE".equals(estado)) {
+            throw new ContenedorNoDisponibleException(
+                "El contenedor no está disponible. Estado actual: " + estado
+            );
+        }
+    }
+
+    /**
+     * Actualiza el estado de un contenedor asignándole un nuevo estado válido.
+     *
+     * @param contenedor   Contenedor cuyo estado será actualizado.
+     * @param nombreEstado Nombre del nuevo estado a aplicar (ej: "ASIGNADO", "DISPONIBLE").
+     * @throws EntidadNotFoundException si el estado solicitado no existe en la tabla EstadoContenedor.
+     */
+    public void actualizarEstado(Contenedor contenedor, String nombreEstado) {
+        EstadoContenedor estado = estadoContenedorService.findByNombre(nombreEstado);
+        contenedor.setEstado(estado);
+        this.save(contenedor);
+    }
+
 
     /**
      * Actualiza el estado de un contenedor según su ID.
@@ -198,8 +230,8 @@ public class ContenedorService {
      *
      * @throws ContenedorNoDisponibleException si el contenedor existe pero no está disponible.
      */
-    public Contenedor getOrCreate(ContenedorRequestDTO requestDTO, String keycloakId) {
-        EstadoContenedor estadoDisponible = estadoContenedorService.findByNombre("DISPONIBLE");
+    public Contenedor crearContenedorAdminSolicitud(ContenedorRequestDTO requestDTO, String keycloakId) {
+        EstadoContenedor estadoDisponible = estadoContenedorService.findByNombre("ASIGNADO");
 
         // Buscar o crear contenedor
         Contenedor contenedor = findByIdentificacionUnica(requestDTO.identificacionUnica())

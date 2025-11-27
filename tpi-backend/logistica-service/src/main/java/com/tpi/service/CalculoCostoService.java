@@ -5,9 +5,10 @@ import com.tpi.model.Tramo;
 import com.tpi.model.Camion;
 import com.tpi.model.Ruta;
 import com.tpi.client.SolicitudClient;
-import com.tpi.dto.CostoFinalDTO;
+import com.tpi.dto.CostoFinalDTOs.*;
 import com.tpi.dto.external.ContenedorResponseDTO;
-import com.tpi.dto.response.CostosEstimadosDTO;
+import com.tpi.dto.response.CostosEstimadosDTOs.CostosEstimadosDTO;
+import com.tpi.dto.response.CostosEstimadosDTOs;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -55,68 +56,89 @@ public class CalculoCostoService {
         Double costoCamionTotal = 0.0;
         Double costoCombustibleTotal = 0.0;
         Double costoEstadiaTotal = 0.0;
+
+        Double distanciaTotalKm = 0.0;
         Long tiempoTotalSegundos = 0L;
-        
+
         // 4. Procesar cada tramo de la ruta
         for (Tramo tramo : tramos) {
-            log.debug("Procesando tramo ID: {} - Estado: {}", tramo.getId(), tramo.getEstado().getNombre());
-            
-            // A. CARGO GESTIÓN (valor fijo por cada tramo)
-            costoGestionTotal += costoGestionPorTramo;
-            log.debug("Costo gestión tramo {}: ${}", tramo.getId(), costoGestionPorTramo);
-            
-            // B. COSTO POR KILÓMETRO DE CADA CAMIÓN (solo si tiene camión asignado)
-            if (tramo.getCamion() != null && tramo.getDistanciaKm() != null) {
-                Double costoTramoCamion = tramo.getDistanciaKm() * tramo.getCamion().getCostoPorKm();
-                costoCamionTotal += costoTramoCamion;
 
-                log.debug("Costo camión tramo {}: ${} ({} km × ${}/km)", 
-                    tramo.getId(), costoTramoCamion, tramo.getDistanciaKm(), tramo.getCamion().getCostoPorKm());
-            }
-            
-            // C. COSTO COMBUSTIBLE (consumo camión × valor litro)
+            // A. Gestión
+            Double costoGestionTramo = costoGestionPorTramo;
+            costoGestionTotal += costoGestionTramo;
+
+            // B. Camión
+            Double costoCamionTramo = 0.0;
             if (tramo.getCamion() != null && tramo.getDistanciaKm() != null) {
-                // Calcular litros consumidos: distancia × (consumo/100)
+                costoCamionTramo = tramo.getDistanciaKm() * tramo.getCamion().getCostoPorKm();
+                costoCamionTotal += costoCamionTramo;
+            }
+
+            // C. Combustible
+            Double costoCombustibleTramo = 0.0;
+            if (tramo.getCamion() != null && tramo.getDistanciaKm() != null) {
                 Double litrosConsumidos = tramo.getDistanciaKm() * 
                                         (tramo.getCamion().getConsumoCombustibleLx100km() / 100);
-                
-                Double costoCombustibleTramo = litrosConsumidos * precioCombustible;
+                costoCombustibleTramo = litrosConsumidos * precioCombustible;
                 costoCombustibleTotal += costoCombustibleTramo;
-                
-                log.debug("Costo combustible tramo {}: ${} ({} L × ${}/L)", 
-                    tramo.getId(), costoCombustibleTramo, litrosConsumidos, precioCombustible);
-            }
-            
-            // D. COSTO ESTADÍA EN DEPÓSITO (si aplica)
-            if (tramo.involucraEstadiaEnDeposito() && tramo.getCostoEstadia() != null) {
-                costoEstadiaTotal += tramo.getCostoEstadia();
-                log.debug("Costo estadía tramo {}: ${}", tramo.getId(), tramo.getCostoEstadia());
             }
 
+            // D. Estadia
+            Double costoEstadiaTramo = 0.0;
+            if (tramo.involucraEstadiaEnDeposito() && tramo.getCostoEstadia() != null) {
+                costoEstadiaTramo = tramo.getCostoEstadia();
+                costoEstadiaTotal += costoEstadiaTramo;
+            }
+
+            // E. Tiempo
             long duracionTramoSegundos = calcularDuracionSegundos(
                 tramo.getFechaHoraLlegada(),
                 tramo.getFechaHoraFin()
             );
             tiempoTotalSegundos += duracionTramoSegundos;
+
+            distanciaTotalKm += tramo.getDistanciaKm();
+
+            // F. Costo real del tramo
+            Double costoRealTramo = costoGestionTramo 
+                                + costoCamionTramo 
+                                + costoCombustibleTramo 
+                                + costoEstadiaTramo;
+
+            tramo.setCostoReal(costoRealTramo);
         }
-        
+
         // 5. Calcular total final
-        Double costoTotal = costoGestionTotal + costoCamionTotal + 
-                           costoCombustibleTotal + costoEstadiaTotal;
-        
+        Double costoTotal = costoGestionTotal + costoCamionTotal 
+                        + costoCombustibleTotal + costoEstadiaTotal;
+
         log.info("Cálculo completado para ruta ID: {}. Total: ${}", ruta.getId(), costoTotal);
-        
-        // 6. Retornar DTO con desglose
-        return CostoFinalDTO.builder()
-            .rutaId(ruta.getId())
-            .cantidadTramos(tramos.size())
-            .costoGestion(costoGestionTotal)
-            .costoCamion(costoCamionTotal)
-            .costoCombustible(costoCombustibleTotal)
-            .costoEstadia(costoEstadiaTotal)
-            .costoTotal(costoTotal)
-            .tiempoTotalSegundos(tiempoTotalSegundos)
-            .build();
+
+        // === 6. Resumen general ===
+        ResumenCfDTO resumen = new ResumenCfDTO(
+                tramos.size(),
+                costoTotal,
+                distanciaTotalKm,
+                this.round2(tiempoTotalSegundos)
+        );
+
+        // === 6.1. Desglose de costos ===
+        CostosCfDTO costos = new CostosCfDTO(
+                this.round2(costoGestionTotal),
+                this.round2(costoCamionTotal),
+                this.round2(costoCombustibleTotal),
+                this.round2(precioCombustible),
+                this.round2(costoEstadiaTotal),
+                this.round2( costoTotal)
+        );
+
+        // === 6.2. Construir DTO final ===
+        return CostoFinalDTO.of(
+                ruta,
+                resumen,
+                costos,
+                tramos
+        );
     }
 
     /**
@@ -185,7 +207,7 @@ public class CalculoCostoService {
         
         // 6. Calcular costos estimados usando promedios
         return calcularCostosConPromedios(
-            ruta.getId(), tramos, promedio, costoGestionPorTramo, precioCombustible, camionesCompatibles.size()
+            ruta.getId(), tramos, promedio, costoGestionPorTramo, precioCombustible, camionesCompatibles
         );
     }
     
@@ -240,86 +262,117 @@ public class CalculoCostoService {
      * @param promedio valores promedio de camiones compatibles.
      * @param costoGestionPorTramo costo fijo de gestión por tramo.
      * @param precioCombustible precio del combustible por litro.
-     * @param cantidadCamionesCompatibles cantidad de camiones que cumplen las capacidades.
+     * @param camiones lista de camiones que cumplen las capacidades.
      * @return DTO con todos los costos estimados calculados.
      */
     private CostosEstimadosDTO calcularCostosConPromedios(
         Long rutaId, List<Tramo> tramos, PromedioCamiones promedio,
-        Double costoGestionPorTramo, Double precioCombustible, int cantidadCamionesCompatibles) {
-        
-        // Inicializar acumuladores
-        Double costoGestionTotal = 0.0;
-        Double distanciaTotal = 0.0;
-        Double costoCamionTotal = 0.0;
-        Double costoCombustibleTotal = 0.0;
-        Double costoEstadiaTotal = 0.0;
-        Long tiempoSegundosTotal = (long) 0;
-        
-        // Procesar cada tramo
+        Double costoGestionPorTramo, Double precioCombustible, List<Camion> camiones) {
+    
+        // Acumuladores globales
+        double costoGestionTotal = 0.0;
+        double distanciaTotal = 0.0;
+        double costoCamionTotal = 0.0;
+        double costoCombustibleTotal = 0.0;
+        double costoEstadiaTotal = 0.0;
+        long tiempoSegundosTotal = 0L;
+
+        double costoTotal = 0.0;
+
         for (Tramo tramo : tramos) {
-            // A. CARGO GESTIÓN (siempre se aplica)
-            costoGestionTotal += costoGestionPorTramo;
-            
-            // B. COSTO CAMIÓN ESTIMADO (usando promedio)
+
+            // --- COSTOS PARCIALES DEL TRAMO ---
+            double subtotalGestion = costoGestionPorTramo;
+            double subtotalCamion = 0.0;
+            double subtotalCombustible = 0.0;
+            double subtotalEstadia = 0.0;
+
+            // A. Coste de camión
             if (tramo.getDistanciaKm() != null) {
-                Double costoTramoCamion = tramo.getDistanciaKm() * promedio.costoPorKmPromedio();
-                costoCamionTotal += costoTramoCamion;
-            }
-            
-            // C. COSTO COMBUSTIBLE ESTIMADO (usando promedio)
-            if (tramo.getDistanciaKm() != null) {
-                Double litrosConsumidos = tramo.getDistanciaKm() * (promedio.consumoPromedio() / 100);
-                Double costoCombustibleTramo = litrosConsumidos * precioCombustible;
-                costoCombustibleTotal += costoCombustibleTramo;
-            }
-            
-            // D. COSTO ESTADÍA (si aplica)
-            if (tramo.involucraEstadiaEnDeposito() && tramo.getCostoEstadia() != null) {
-                costoEstadiaTotal += tramo.getCostoEstadia();
+                subtotalCamion = tramo.getDistanciaKm() * promedio.costoPorKmPromedio();
             }
 
-            // E. acumuladores totales
-            if (tramo.getDuracionEstimadaSegundos() != null) {
-                tiempoSegundosTotal += tramo.getDuracionEstimadaSegundos();
+            // B. Coste de combustible
+            if (tramo.getDistanciaKm() != null) {
+                double litrosConsumidos = tramo.getDistanciaKm() * (promedio.consumoPromedio() / 100);
+                subtotalCombustible = litrosConsumidos * precioCombustible;
             }
+
+            // C. Estadia si corresponde
+            if (tramo.involucraEstadiaEnDeposito() && tramo.getCostoEstadia() != null) {
+                subtotalEstadia = tramo.getCostoEstadia();
+            }
+
+            // --- SUBTOTAL DEL TRAMO ---
+            double subtotalTramo = subtotalGestion + subtotalCamion + subtotalCombustible + subtotalEstadia;
+
+            // Guardar costo aproximado en el tramo
+            tramo.setCostoAproximado(this.round2(subtotalTramo));
+
+            // --- SUMAR A LOS ACUMULADORES GLOBALES ---
+            costoGestionTotal += subtotalGestion;
+            costoCamionTotal += subtotalCamion;
+            costoCombustibleTotal += subtotalCombustible;
+            costoEstadiaTotal += subtotalEstadia;
 
             if (tramo.getDistanciaKm() != null) {
                 distanciaTotal += tramo.getDistanciaKm();
             }
+
+            if (tramo.getDuracionEstimadaSegundos() != null) {
+                tiempoSegundosTotal += tramo.getDuracionEstimadaSegundos();
+            }
+
+            costoTotal += subtotalTramo;
         }
-        
-        // Calcular total
-        Double costoTotal = costoGestionTotal + costoCamionTotal + 
-                           costoCombustibleTotal + costoEstadiaTotal;
 
-        // Calcular en horas para mas info
-        Double totalHoras = tiempoSegundosTotal / 3600.0;
-        
-        return CostosEstimadosDTO.builder()
-            .rutaId(rutaId)
-            .cantidadTramos(tramos.size())
-            .cantidadCamionesCompatibles(cantidadCamionesCompatibles)
-            .costoGestion(this.round2(costoGestionTotal))
-            .costoCamion(this.round2(costoCamionTotal))
-            .costoCombustible(this.round2(costoCombustibleTotal))
-            .costoEstadia(this.round2(costoEstadiaTotal))
+        // Horas totales
+        double totalHoras = tiempoSegundosTotal / 3600.0;
 
-            .consumoPromedio(this.round2(promedio.consumoPromedio()))
-            .costoPorKmPromedio(this.round2(promedio.costoPorKmPromedio()))
-            .distanciaTotalKm(this.round2(distanciaTotal))
-            .costoEstimado(this.round2(costoTotal))
-            
-            .tiempoEstimadoSegundos(tiempoSegundosTotal)
-            .tiempoEstimadoHoras(this.round2(totalHoras))
-            .esEstimado(true)
-            .fechaCalculo(new Date())
-            .build();
+        // Guardar datos
+        tramoService.saveAll(tramos);
+
+        // 1. Construir ResumenDTO
+        CostosEstimadosDTOs.ResumenDTO resumen = new CostosEstimadosDTOs.ResumenDTO(
+                tramos.size(),                     // cantidadTramos
+                camiones.size(),               // cantidadCamionesCompatibles
+                round2(costoTotal),                // costoTotal
+                round2(distanciaTotal),            // distanciaTotalKm
+                round2(totalHoras)                 // tiempoEstimadoHoras
+        );
+
+        // 2. Construir CostosDTO
+        CostosEstimadosDTOs.CostosDTO costos = new CostosEstimadosDTOs.CostosDTO(
+                round2(costoGestionTotal),         // gestion
+                round2(costoCamionTotal),          // camion
+                round2(costoCombustibleTotal),     // combustible Total
+                round2(precioCombustible),     // combustible Litro
+                round2(costoEstadiaTotal),         // estadia
+                round2(promedio.costoPorKmPromedio()) // costoPorKmPromedio
+        );
+
+        // 3. Construir MetricasDTO
+        CostosEstimadosDTOs.MetricasDTO metricas = new CostosEstimadosDTOs.MetricasDTO(
+                round2(promedio.consumoPromedio()),  // consumoPromedioLx100
+                tiempoSegundosTotal                   // tiempoEstimadoSegundos
+        );
+
+        // 5. Construir el CostosEstimadosDTO final
+        CostosEstimadosDTOs.CostosEstimadosDTO dto = CostosEstimadosDTOs.CostosEstimadosDTO.of(
+            rutaId, true, new Date(), resumen, costos, metricas, camiones
+        );
+
+        return dto;
     }
 
     /**
      * Redondea un valor Double a dos decimales usando Math.round().
      */
     private Double round2(Double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    private Double round2(Long value) {
         return Math.round(value * 100.0) / 100.0;
     }
 

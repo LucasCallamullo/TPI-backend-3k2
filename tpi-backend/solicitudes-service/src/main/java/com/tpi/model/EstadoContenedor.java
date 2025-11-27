@@ -15,5 +15,5 @@ public class EstadoContenedor {
     private Long id;
     
     @Column(unique = true)
-    private String nombre; // "DISPONIBLE", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO"
+    private String nombre; // "DISPONIBLE", "ASIGNADO", "EN_TRANSITO", "ENTREGADO", "EN_DEPOSITO"
 }

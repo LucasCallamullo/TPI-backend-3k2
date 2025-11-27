@@ -73,7 +73,7 @@ public record RutaAsignadaResponseDTO(
     private static Double calcularDuracionTotalHoras(List<Tramo> tramos) {
         double total = tramos.stream()
             .mapToDouble(t -> t.getDuracionEstimadaSegundos() != null ?
-                    t.getDuracionEstimadaSegundos() / 3600.0 : 0.0)
+                    (t.getDuracionEstimadaSegundos() / 3600.0) : 0.0)
             .sum();
 
         return round2(total);

@@ -1,6 +1,6 @@
 package com.tpi.client;
 
-import com.tpi.dto.response.RouteResponse;
+import com.tpi.dto.external.RouteResponseDTOs.RouteAlternativeResponse;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.exception.MicroservicioNoDisponibleException;
 import lombok.RequiredArgsConstructor;
@@ -26,20 +26,21 @@ public class RoutingClient {
      * @param destinoLon  longitude of the destination point
      * @return            RouteResponse object containing distance, duration and steps
      */
-    public RouteResponse calcularRutaCompleta(double origenLat, double origenLon, 
+    public RouteAlternativeResponse calcularRutaCompleta(double origenLat, double origenLon, 
                                               double destinoLat, double destinoLon) {
         try {
             // Builds and executes a GET request to the routing endpoint.
-            RouteResponse response = routingRestClient.get()
+            RouteAlternativeResponse response = routingRestClient.get()
                 .uri(uriBuilder -> uriBuilder
-                    .path("/api/v1/routing/calcular-ruta")   // Endpoint of the routing microservice
+                    // .path("/api/v1/routing/calcular-ruta")   // Endpoint of the routing microservice
+                    .path("/api/v1/routing/calcular-rutas-alternativas")   // Endpoint of the routing microservice
                     .queryParam("origenLat", origenLat)      // Adds query parameters for origin/destination
                     .queryParam("origenLon", origenLon)
                     .queryParam("destinoLat", destinoLat)
                     .queryParam("destinoLon", destinoLon)
                     .build())
                 .retrieve()                                  // Sends the request and retrieves the response
-                .body(RouteResponse.class);                  // Converts JSON into a RouteResponse object
+                .body(RouteAlternativeResponse.class);                  // Converts JSON into a RouteResponse object
             
             // Checks if the microservice returned no content (unexpected)
             if (response == null) {
