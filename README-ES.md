@@ -5,10 +5,10 @@ La presente propuesta corresponde al Trabajo Práctico Integrador (TPI) de la as
 El objetivo general del proyecto es implementar una solución backend basada en microservicios, orientada a la gestión integral de un sistema de logística de transporte terrestre de contenedores utilizados para la construcción de viviendas.
 En este escenario, el objeto de transporte es el contenedor en sí mismo, no su contenido.
 
-[![Static Badge](https://img.shields.io/badge/Documentation-EN-blue)](https://github.com/LucasCallamullo/E-commerce-App-Web/blob/main/README.md) [![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/E-commerce-App-Web/blob/main/README-ES.md)
+[![Static Badge](https://img.shields.io/badge/Documentation-EN-blue)](https://github.com/LucasCallamullo/TPI-backend-3k2/blob/main/README.md) [![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/TPI-backend-3k2/blob/main/README-ES.md)
 
 ### [ES]
-[![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/E-commerce-App-Web/blob/main/README-ES.md)
+[![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/TPI-backend-3k2/blob/main/README-ES.md)
 
 ## 🛠️ Tecnologías Stack
 
@@ -34,7 +34,12 @@ En este escenario, el objeto de transporte es el contenedor en sí mismo, no su 
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 ![JUnit](https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logo=junit5&logoColor=white)
 
+
 <br>
+<h2> 👥 Información de Contacto </h2>
+<a href="#contacto-section">Ir a Contacto ↓</a>
+<br>
+
 <h2>🐳 Despliegue con Docker</h2>
 
 Todos los servicios están dockerizados y pueden levantarse mediante Docker Compose, incluyendo:
@@ -92,27 +97,51 @@ Consume una instancia Docker de OSRM (Open Source Routing Machine) y soporta:
 </ul>
 
 
+### C4 Model
+
+![](https://raw.githubusercontent.com/LucasCallamullo/TPI-backend-3k2/refs/heads/main/docs/img/c4_model.png)
 
 
+### Diagramas de Relaciones de Entidades - DER
+
+![](https://raw.githubusercontent.com/LucasCallamullo/TPI-backend-3k2/refs/heads/main/docs/img/der.png)
 
 
+### Flujo de Autenticación:
+![](https://raw.githubusercontent.com/LucasCallamullo/TPI-backend-3k2/refs/heads/main/docs/img/auth_flow.png)
+
+#### Pasos Detallados del Flujo
+1. **Inicio de Autenticación:** El usuario accede a la URL de autenticación en el navegador:
+   ```bash
+      http://localhost:8081/realms/tpi-backend/protocol/openid-connect/auth
+         ?client_id=tpi-backend-client
+         &response_type=code
+         &redirect_uri=http://localhost:8080/api/login/oauth2/code/keycloak
 
 
+2. **Interfaz de Login:** Keycloak presenta el formulario de autenticación donde el usuario ingresa sus credenciales (ej: cliente01 / 1234).
 
-### Images:
-![](https://i.pinimg.com/736x/73/5b/6e/735b6ebb2cf852e28472a2efcc378e9e.jpg)
-![](https://i.pinimg.com/736x/e1/1b/8a/e11b8a41f2f803cb0bcbcc735b4fcbbf.jpg)
+3. **Generación del Código de Autorización:** Tras validar las credenciales, Keycloak genera un código de autorización y redirige al Gateway:
+   ```bash
+      http://localhost:8080/api/login/oauth2/code/keycloak?code=ABC123XYZ
+   
+4. **Intercambio por Token JWT:** El AuthController del Gateway recibe el código y realiza una petición POST a Keycloak para intercambiarlo por un token JWT.
 
-> Some screens of the app
+5. **Obtención del Token:** Keycloak responde con el JWT completo que contiene:
+<ul> 
+   <li>Información del usuario.</li>
+   <li>Roles asignados (ROLE_CLIENTE, ROLE_ADMIN).</li>
+   <li>Tiempo de expiración.</li>
+   <li>Metadata de seguridad.</li>
+</ul>
 
-<br></br>
 
-### 💻 Contacto Lucas Callamullo - Back-End Developer
+<br>
+
+<h2 id="contacto-section"> 💻 Contacto Lucas Callamullo - Back-End Developer </h2>
 
 | [![GitHub](https://img.shields.io/badge/github-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white)](https://github.com/LucasCallamullo) | [![LinkedIn](https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/lucas-callamullo/) | [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:lucascallamullo98@gmail.com) |
 |:-:|:-:|:-:|
 
 | [![Portfolio](https://img.shields.io/badge/Portfolio-%23000000.svg?style=for-the-badge&logo=react&logoColor=white)](https://github.com/LucasCallamullo) | [![Youtube Badge](https://img.shields.io/badge/YouTube%20-%23FF0000.svg?&style=for-the-badge&logo=YouTube&logoColor=white)](https://www.youtube.com/@lucas_clases_python) |
 |:-:|:-:|
-
-

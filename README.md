@@ -1,81 +1,175 @@
-## Proyecto WebApp Ecommerce
+<h1>Container Transport Logistics System – Backend (TPI 2025)</h1>
 
-### Description
-This project is a fully functional Ecommerce WebApp developed with Django for the back-end and a responsive front-end using HTML, CSS (Bootstrap), and JavaScript. The application allows users to efficiently manage products and accounts through a CRUD system, with advanced features such as secure authentication and real-time content updates using AJAX.
+<p>This proposal corresponds to the Integrative Practical Work (TPI) of the Backend Applications course – Year 2025.</p>
+<p>The overall objective of the project is to implement a microservices-based backend solution, focused on the comprehensive management of a land transport logistics system for containers used in housing construction.</p>
+<p>In this scenario, the transport object is the container itself, not its content.</p>
 
-[![Static Badge](https://img.shields.io/badge/Documentation-EN-blue)](https://github.com/LucasCallamullo/E-commerce-App-Web/blob/main/README.md) [![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/E-commerce-App-Web/blob/main/README-ES.md)
+[![Static Badge](https://img.shields.io/badge/Documentation-EN-blue)](https://github.com/LucasCallamullo/TPI-backend-3k2/blob/main/README.md) [![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/TPI-backend-3k2/blob/main/README-ES.md)
+
 
 ### [EN]
+<h3>Backend</h3>
+<p>
+  <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java">
+  <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot">
+  <img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white" alt="Spring Security">
+</p>
 
-### ⚙️ Technologies
-| ![Python Badge](https://img.shields.io/badge/python-%2314354C.svg?style=for-the-badge&logo=python&logoColor=white) | ![Django Badge](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green) | ![MySQL Badge](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white) |
-|:-:|:-:|:-:|
+<h3>Database & ORM</h3>
+<p>
+  <img src="https://img.shields.io/badge/H2_Database-0040CA?style=for-the-badge&logo=h2&logoColor=white" alt="H2 Database">
+  <img src="https://img.shields.io/badge/JPA-Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white" alt="JPA Hibernate">
+</p>
 
+<h3>Security</h3>
+<p>
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white" alt="JWT">
+</p>
 
-| ![HTML Badge](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) | ![JavaScript Badge](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E) | ![CSS Badge](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) | ![Bootstrap 5 Badge](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white) |
-|:-:|:-:|:-:|:-:|
+<h3>Tools & DevOps</h3>
+<p>
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white" alt="Postman">
+  <img src="https://img.shields.io/badge/git%20-%23F05033.svg?&style=for-the-badge&logo=git&logoColor=white" alt="Git">
+  <img src="https://img.shields.io/badge/github%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+</p>
 
-
-
-
-### 🛠️ Tools 
-| ![Git Badge](https://img.shields.io/badge/git%20-%23F05033.svg?&style=for-the-badge&logo=git&logoColor=white) | [![GitHub Badge](https://img.shields.io/badge/github%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white)](https://github.com/LucasCallamullo) | ![VSCode Badge](https://img.shields.io/badge/VSCode-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white) |
-|:-:|:-:|:-:|
-
-
-#### Features
-* RESTful API: Implemented in Django to handle all CRUD operations (Create, Read, Update, Delete) for both products and users.
-* Responsive Interface: Adaptive design for different devices using HTML, CSS, and Bootstrap.
-* Secure Authentication: Integrated user registration and authentication system, ensuring data privacy and security.
-* Real-Time Updates: Utilization of AJAX to enhance user experience, allowing actions like updating the shopping cart without page reloads.
-* MySQL Database: Connection and data manipulation through Django's ORM, ensuring integrity and efficiency in database operations.
-
-#### Installation and Setup
-1. **Clone the repository:**:
-   ```bash
-   git clone https://github.com/LucasCallamullo/E-commerce-App-Web.git
-   cd E-commerce-App-Web
-
-2. **Install Dependencies**:
-   ```bash
-   pip install mysqlclient
-   pip install django
-   pip install pandas
-   pip install openpyxl
-
-3. **Apply Migrations: Run the migrations to create the tables in the database**:
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-
-4. **Create a Superuser (Optional): If you need access to the admin panel, create a superuser**:
-   ```bash
-   python manage.py createsuperuser
-
-5. **Run the load_data Script: This command will load initial data into your database using pandas and openpyxl**
-   ```bash
-   python manage.py load_data
-6. **Run the load_product_data Script: Similar to the previous step, this command will load products into the database (names, prices, categories, etc.).**
-   ```bash
-   python manage.py load_product_data
-
-### [ES]
-[![Documentation ES](https://img.shields.io/badge/Documentation-ES-green)](https://github.com/LucasCallamullo/E-commerce-App-Web/blob/main/README-ES.md)
+<h3>Testing & Docs</h3>
+<p>
+  <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger">
+  <img src="https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logo=junit5&logoColor=white" alt="JUnit">
+</p>
 
 
+<br>
+<h2>👥 Contact Information</h2>
+<a href="#contacto-section">Go to Contact ↓</a>
 
 
-### Images:
-![](https://i.pinimg.com/736x/73/5b/6e/735b6ebb2cf852e28472a2efcc378e9e.jpg)
-![](https://i.pinimg.com/736x/e1/1b/8a/e11b8a41f2f803cb0bcbcc735b4fcbbf.jpg)
+<br>
+<h2>🐳 Docker Deployment</h2>
 
-> Some screens of the app
+<p>All services are dockerized and can be started using Docker Compose, including:</p>
+<ul> 
+   <li>Microservices (Customers, Requests, Logistics)</li>
+   <li>Gateway</li>
+   <li>Keycloak</li>
+   <li>Database</li>
+   <li>OSRM (with preprocessed maps)</li>
+   <li>Routing Service</li>
+</ul>
+<p>This allows for a unified, reproducible environment ready for testing or deployment.</p>
 
-<br></br>
 
-### 💻 Contact Back-End Developer / Full-Stack Developer:
-| [![GitHub Badge](https://img.shields.io/badge/github-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white)](https://github.com/LucasCallamullo) | [![LinkedIn Badge](https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/lucas-callamullo/) | [![Youtube Badge](https://img.shields.io/badge/YouTube%20-%23FF0000.svg?&style=for-the-badge&logo=YouTube&logoColor=white)](https://www.youtube.com/@lucas_clases_python) |
-|:-:|:-:|:-:|
+<br>
+<h2>General Architecture</h2>
 
-| **Lucas Callamullo** |
-|:-:|
+<p>The system follows a modern architecture composed of multiple independent microservices, each responsible for a specific domain:</p>
+
+<h3>🔹 Customer Microservice</h3>
+<p>Management of end users, integration with Keycloak for authentication and role management, creation and administration of registered customers in the system.</p>
+
+<h3>🔹 Request Microservice</h3>
+<p>Complete management of the transport request lifecycle: creation, container assignment, statuses, validations, and process tracking.</p>
+
+<h3>🔹 Logistics Microservice</h3>
+<p>Management of routes, segments, logistic statuses, and estimated cost calculation based on distances, consumption, rates, and assigned vehicle type.</p>
+
+<h3>🔹 API Gateway</h3>
+<p>Single entry point for all frontend applications or external clients. Responsible for routing and communication to each microservice, in addition to validating JWT tokens issued by Keycloak.</p>
+
+<h3>🔹 Authentication Service – Keycloak</h3>
+<p>The system uses Keycloak as identity and authentication provider:</p>
+<ul> 
+   <li>User management</li>
+   <li>Roles and permissions</li>
+   <li>JWT token issuance</li>
+   <li>Administrative integration for automatic user creation</li>
+</ul>
+
+<h3>🔹 Routing Service (OSRM)</h3>
+<p>Microservice dedicated exclusively to calculating routes and distances based on geographic coordinates (latitude/longitude). It consumes a Docker instance of OSRM (Open Source Routing Machine) and supports:</p>
+<ul> 
+   <li>Main route</li>
+   <li>Alternative routes</li>
+   <li>Distance calculation and estimated times</li>
+   <li>This allows optimization of system costs and logistics.</li>
+</ul>
+
+
+
+<h3>C4 Model</h3>
+<img src="https://raw.githubusercontent.com/LucasCallamullo/TPI-backend-3k2/refs/heads/main/docs/img/c4_model.png" alt="C4 Model Diagram">
+
+<h3>Entity Relationship Diagrams - ERD</h3>
+<img src="https://raw.githubusercontent.com/LucasCallamullo/TPI-backend-3k2/refs/heads/main/docs/img/der.png" alt="Entity Relationship Diagram">
+
+<h3>Authentication Flow:</h3>
+<img src="https://raw.githubusercontent.com/LucasCallamullo/TPI-backend-3k2/refs/heads/main/docs/img/auth_flow.png" alt="Authentication Flow Diagram">
+
+
+<h4>Detailed Flow Steps</h4>
+<ol>
+  <li>
+     <strong>Authentication Start:</strong> 
+     <p>The user accesses the authentication URL in the browser:</p>
+    <pre><code>http://localhost:8081/realms/tpi-backend/protocol/openid-connect/auth
+  ?client_id=tpi-backend-client
+  &response_type=code
+  &redirect_uri=http://localhost:8080/api/login/oauth2/code/keycloak</code></pre>
+  </li>
+  
+  <li>
+     <strong>Login Interface:</strong> 
+     <p>Keycloak presents the authentication form where the user enters their credentials (e.g.: client01 / 1234).
+</p>
+   </li>
+  
+  <li>
+     <strong>Authorization Code Generation:</strong> 
+     <p>After validating the credentials, Keycloak generates an authorization code and redirects to the Gateway:</p>
+    <pre><code>http://localhost:8080/api/login/oauth2/code/keycloak?code=ABC123XYZ</code></pre>
+  </li>
+  
+  <li>
+     <strong>Exchange for JWT Token:</strong> 
+     <p>The Gateway's AuthController receives the code and makes a POST request to Keycloak to exchange it for a JWT token.</p>
+   </li>
+  
+  <li>
+      <strong>Token Retrieval:</strong> 
+      <p>Keycloak responds with the complete JWT containing:</p>
+      <ul> 
+         <li>User information.</li>
+         <li>Assigned roles (ROLE_CLIENTE, ROLE_ADMIN).</li>
+         <li>Expiration time.</li>
+         <li>Security metadata.</li>
+      </ul>
+  </li>
+</ol>
+
+
+<br>
+
+<h2 id="contacto-section">💻 Contact Lucas Callamullo - Back-End Developer</h2>
+
+<div style="text-align: left; margin: 20px 0;">
+  <a href="https://github.com/LucasCallamullo" style="display: inline-block; margin: 0 10px;">
+    <img src="https://img.shields.io/badge/github-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+  </a>
+  <a href="https://www.linkedin.com/in/lucas-callamullo/" style="display: inline-block; margin: 0 10px;">
+    <img src="https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn">
+  </a>
+  <a href="mailto:lucascallamullo98@gmail.com" style="display: inline-block; margin: 0 10px;">
+    <img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email">
+  </a>
+</div>
+
+<div style="text-align: left; margin: 20px 0;">
+  <a href="https://github.com/LucasCallamullo" style="display: inline-block; margin: 0 10px;">
+    <img src="https://img.shields.io/badge/Portfolio-%23000000.svg?style=for-the-badge&logo=react&logoColor=white" alt="Portfolio">
+  </a>
+  <a href="https://www.youtube.com/@lucas_clases_python" style="display: inline-block; margin: 0 10px;">
+    <img src="https://img.shields.io/badge/YouTube%20-%23FF0000.svg?&style=for-the-badge&logo=YouTube&logoColor=white" alt="YouTube">
+  </a>
+</div>
