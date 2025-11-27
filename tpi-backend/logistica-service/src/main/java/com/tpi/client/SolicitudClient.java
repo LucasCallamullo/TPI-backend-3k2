@@ -1,17 +1,14 @@
 package com.tpi.client;
 
 import com.tpi.dto.external.ContenedorResponseDTO;
-import com.tpi.dto.external.SolicitudResponseDTO;
 import com.tpi.dto.external.SolicitudUpdateEstadoResponseDTO;
 import com.tpi.exception.EntidadNotFoundException;
 import com.tpi.exception.MicroservicioNoDisponibleException;
-// import com.tpi.service.SecurityContextService;
 import com.tpi.service.SecurityContextService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-// import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;

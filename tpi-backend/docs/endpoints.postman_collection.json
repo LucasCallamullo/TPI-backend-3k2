@@ -1,0 +1,1022 @@
+{
+	"info": {
+		"_postman_id": "7dfd98bf-d236-4738-8dc9-2efc6d094709",
+		"name": "TPI BACKEND",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "41618970"
+	},
+	"item": [
+		{
+			"name": "MS - Solicitudes",
+			"item": [
+				{
+					"name": "Solicitudes",
+					"item": [
+						{
+							"name": "Crear Solicitud Completa",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"cliente\": {\r\n    \"nombre\": \"Juan Pérez\",\r\n    \"email\": \"juan.perez8@example.com\",\r\n    \"password\": \"1234\",\r\n    \"telefono\": \"+54 9 11 2345 6789\",\r\n    \"direccion\": \"Calle Falsa 123, Buenos Aires\"\r\n  },\r\n  \"contenedor\": {\r\n    \"peso\": 1500.5,\r\n    \"volumen\": 33.2,\r\n    \"identificacionUnica\": \"CONT-2024-001-ABC123\"\r\n  },\r\n  \"origen\": {\r\n    \"direccion\": \"Av. Corrientes 1234, Microcentro, CABA\",\r\n    \"nombre\": \"Depósito Central Buenos Aires\",\r\n    \"latitud\": -34.603722,\r\n    \"longitud\": -58.381592,\r\n    \"tipoId\": 2\r\n  },\r\n  \"destino\": {\r\n    \"direccion\": \"Av. Av. Colón 500, Córdoba Capital\",\r\n    \"nombre\": \"Sucursal Córdoba\",\r\n    \"latitud\": -31.420083,\r\n    \"longitud\": -64.188776,\r\n    \"tipoId\": 3\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/solicitudes/completa"
+							},
+							"response": []
+						},
+						{
+							"name": "Obtener Solicitud Id",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/solicitudes/3"
+							},
+							"response": []
+						},
+						{
+							"name": "Listas Solicitudes",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/solicitudes"
+							},
+							"response": []
+						},
+						{
+							"name": "Asignar Ruta",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"depositosIntermedios\": []\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/solicitudes/1/asignar-ruta"
+							},
+							"response": []
+						},
+						{
+							"name": "Calcular costos estimados",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": "http://localhost:8080/solicitudes/1/calcular-costos-estimados"
+							},
+							"response": []
+						},
+						{
+							"name": "Costos totales",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": "http://localhost:8080/solicitudes/1/calcular-costos-totales"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Solicitud Cliente",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"contenedorId\": 1,\r\n  \"origen\": {\r\n    \"direccion\": \"Av. Corrientes 1234, Microcentro, CABA\",\r\n    \"nombre\": \"Depósito Central Buenos Aires\",\r\n    \"latitud\": -34.603722,\r\n    \"longitud\": -58.381592,\r\n    \"tipoId\": 2\r\n  },\r\n  \"destino\": {\r\n    \"direccion\": \"Av. Av. Colón 500, Córdoba Capital\",\r\n    \"nombre\": \"Sucursal Córdoba\",\r\n    \"latitud\": -31.420083,\r\n    \"longitud\": -64.188776,\r\n    \"tipoId\": 3\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/solicitudes"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Aux Solicitudes",
+					"item": [
+						{
+							"name": "Seguimiento",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/solicitudes/seguimiento/1"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Contendores",
+					"item": [
+						{
+							"name": "Obtener Contenedores",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/contenedores"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Contenedor",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"peso\": 1500.5,\r\n  \"volumen\": 33.2,\r\n  \"identificacionUnica\": \"CONT-2024-001-ZXY123\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/contenedores"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "MS - Clientes",
+			"item": [
+				{
+					"name": "CRUD Clientes",
+					"item": [
+						{
+							"name": "Obtener Todos",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/clientes"
+							},
+							"response": []
+						},
+						{
+							"name": "Por Keycloack Id",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/clientes/efb3eedd-38ea-4031-a847-2533b0067f9f"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Cliente",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Lucas Algo\",\r\n  \"email\": \"cliente31@example.com\",\r\n  \"password\": \"1234\",\r\n  \"telefono\": \"123-456-789\",\r\n  \"direccion\": \"Calle Falsa 123\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/clientes"
+							},
+							"response": []
+						},
+						{
+							"name": "Actualizar Datos",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Juan Carlos Pérez\",\r\n  \"telefono\": \"+54 11 1234-5678\",\r\n  \"direccion\": \"Av. Siempre Viva 123, Springfield\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/clientes/me"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Endpoints ROLES",
+					"item": [
+						{
+							"name": "Hola Clientes",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/clientes/hola-clientes"
+							},
+							"response": []
+						},
+						{
+							"name": "Hola Admin",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/clientes/hola-admin"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "MS - Logistica",
+			"item": [
+				{
+					"name": "Rutas",
+					"item": [
+						{
+							"name": "Asignar Ruta a Solicitud",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"solicitudId\": 1,\r\n  \"origenId\": 4,\r\n  \"destinoId\": 5,\r\n  \"tarifaId\": 1,\r\n  \"depositosIntermedios\": []\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/rutas/asignar-a-solicitud"
+							},
+							"response": []
+						},
+						{
+							"name": "Calcular costos estimados",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/rutas/solicitud/2/calcular-costos-estimados"
+							},
+							"response": []
+						},
+						{
+							"name": "Listas rutas",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/rutas"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Ubicaciones",
+					"item": [
+						{
+							"name": "Obtener Tipos Ubicacion",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/tipos-ubicacion"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tarifas",
+					"item": [
+						{
+							"name": "Obtener Tarifas",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"contenedor\": {\r\n    \"peso\": 1500.5,\r\n    \"volumen\": 33.2,\r\n    \"identificacionUnica\": \"CONT-2024-001-ABC123\"\r\n  },\r\n  \"origen\": {\r\n    \"direccion\": \"Av. Corrientes 1234, Microcentro, CABA\",\r\n    \"nombre\": \"Depósito Central Buenos Aires\",\r\n    \"latitud\": -34.603722,\r\n    \"longitud\": -58.381592,\r\n    \"tipoId\": 2\r\n  },\r\n  \"destino\": {\r\n    \"direccion\": \"Av. Colón 500, Córdoba Capital\",\r\n    \"nombre\": \"Sucursal Córdoba\",\r\n    \"latitud\": -31.420083,\r\n    \"longitud\": -64.188776,\r\n    \"tipoId\": 3\r\n  }\r\n}"
+								},
+								"url": "http://localhost:8080/tarifas"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Tarifa",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Tarifa Mediano - 20-30m³\",\r\n  \"descripcion\": \"Tarifa aplicable a contenedores medianos de entre 20 y 30m³. Recomendado para obras pequeñas y mudanzas familiares.\",\r\n  \"volumenMin\": 20.0,\r\n  \"volumenMax\": 30.0,\r\n  \"costoGestionPorTramo\": 2500.0,\r\n  \"precioCombustiblePorLitro\": 980.0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/tarifas"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Depositos",
+					"item": [
+						{
+							"name": "Obtener Depositos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"contenedor\": {\r\n    \"peso\": 1500.5,\r\n    \"volumen\": 33.2,\r\n    \"identificacionUnica\": \"CONT-2024-001-ABC123\"\r\n  },\r\n  \"origen\": {\r\n    \"direccion\": \"Av. Corrientes 1234, Microcentro, CABA\",\r\n    \"nombre\": \"Depósito Central Buenos Aires\",\r\n    \"latitud\": -34.603722,\r\n    \"longitud\": -58.381592,\r\n    \"tipoId\": 2\r\n  },\r\n  \"destino\": {\r\n    \"direccion\": \"Av. Colón 500, Córdoba Capital\",\r\n    \"nombre\": \"Sucursal Córdoba\",\r\n    \"latitud\": -31.420083,\r\n    \"longitud\": -64.188776,\r\n    \"tipoId\": 3\r\n  }\r\n}"
+								},
+								"url": "http://localhost:8080/depositos"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Deposito",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Depósito Central\",\r\n  \"costoEstadiaPorDia\": 2500.0,\r\n  \"ubicacion\": {\r\n    \"direccion\": \"San Martín 2020, Santa Fe, Argentina\",\r\n    \"nombre\": \"Almacén Santa Fe Norte\",\r\n    \"latitud\": -31.633329,\r\n    \"longitud\": -60.700438,\r\n    \"tipoId\": 1\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/depositos"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Camiones",
+					"item": [
+						{
+							"name": "Obtener Camiones",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Tarifa Mediano - 20-30m³\",\r\n  \"descripcion\": \"Tarifa aplicable a contenedores medianos de entre 20 y 30m³. Recomendado para obras pequeñas y mudanzas familiares.\",\r\n  \"volumenMin\": 20.0,\r\n  \"volumenMax\": 30.0,\r\n  \"costoGestionPorTramo\": 2500.0,\r\n  \"precioCombustiblePorLitro\": 980.0\r\n}"
+								},
+								"url": "http://localhost:8080/camiones"
+							},
+							"response": []
+						},
+						{
+							"name": "Crear Camion",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"addTokenTo": "header",
+										"client_authentication": "header",
+										"grant_type": "authorization_code",
+										"password": "1234",
+										"username": "cliente01",
+										"clientSecret": "",
+										"clientId": "tpi-backend-client",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token"
+									}
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"dominio\": \"AC457GH\",\r\n  \"nombreConductor\": \"Carlos Fernández\",\r\n  \"telefonoConductor\": \"+54 9 342 512 8890\",\r\n  \"disponible\": true,\r\n  \"costoPorKm\": 180.0,\r\n  \"consumoCombustibleLx100km\": 28.5,\r\n  \"modelo\": \"Mercedes-Benz Actros 2545\",\r\n  \"capacidadPesoKg\": 14000.0,\r\n  \"capacidadVolumenM3\": 55.0\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8080/camiones"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tramos",
+					"item": [
+						{
+							"name": "Obtener Tramo por Id",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/tramos/1"
+							},
+							"response": []
+						},
+						{
+							"name": "Asignar Camion",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": "http://localhost:8080/tramos/1/asignar-camion/2"
+							},
+							"response": []
+						},
+						{
+							"name": "Cambiar Estado Tramo",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": "http://localhost:8080/tramos/1/estado/4"
+							},
+							"response": []
+						},
+						{
+							"name": "Obtener Estados Tramo",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": {
+										"accessTokenUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/token",
+										"authUrl": "http://192.168.100.124:8081/realms/tpi-backend/protocol/openid-connect/auth",
+										"clientId": "tpi-backend-client",
+										"client_authentication": "header",
+										"redirect_uri": "http://localhost:8080/api/login/oauth2/code/keycloak",
+										"state": "",
+										"scope": "openid",
+										"tokenName": "TPI-Token",
+										"addTokenTo": "header"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:8080/estados-tramo"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "MS - OSRM",
+			"item": [
+				{
+					"name": "Ruta Unica OSRM",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/routing/calcular-ruta?origenLat=-34.603722&origenLon=-58.381592&destinoLat=-34.573722&destinoLon=-58.431592",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"routing",
+								"calcular-ruta"
+							],
+							"query": [
+								{
+									"key": "origenLat",
+									"value": "-34.603722"
+								},
+								{
+									"key": "origenLon",
+									"value": "-58.381592"
+								},
+								{
+									"key": "destinoLat",
+									"value": "-34.573722"
+								},
+								{
+									"key": "destinoLon",
+									"value": "-58.431592"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rutas alternativas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/routing/calcular-rutas-alternativas?origenLat=-34.6083&origenLon=-58.3712&destinoLat=-34.5591&destinoLon=-58.4158",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"routing",
+								"calcular-rutas-alternativas"
+							],
+							"query": [
+								{
+									"key": "origenLat",
+									"value": "-34.6083"
+								},
+								{
+									"key": "origenLon",
+									"value": "-58.3712"
+								},
+								{
+									"key": "destinoLat",
+									"value": "-34.5591"
+								},
+								{
+									"key": "destinoLon",
+									"value": "-58.4158"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

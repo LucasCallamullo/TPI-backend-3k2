@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación del Sistema - Reglas de Cálculo de Tarifas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1f6feb;
+            --primary-dark: #1756c7;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--gray-100);
+            color: var(--gray-800);
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: var(--gradient);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        nav a:hover, nav a.active-nav {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-300);
+        }
+
+        .section-header h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header p {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+            max-width: 800px;
+        }
+
+        /* Card Styles */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            background: var(--gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-body p {
+            margin-bottom: 1rem;
+            color: var(--gray-700);
+        }
+
+        .card-body code {
+            background-color: var(--gray-100);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            display: block;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--primary);
+            overflow-x: auto;
+        }
+
+        .card-footer {
+            padding: 1rem 1.5rem;
+            background-color: var(--gray-100);
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .entity-tag {
+            background-color: var(--gray-200);
+            color: var(--gray-700);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Button Styles */
+        .btn-documentacion {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.75rem 1.5rem;
+            background: var(--gradient);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .btn-documentacion:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(30, 64, 175, 0.22);
+            background: var(--primary-dark);
+        }
+
+        /* Microservice Cards */
+        .microservice-card {
+            margin-bottom: 2rem;
+        }
+
+        .microservice-card .card-header {
+            background: var(--gray-800);
+        }
+
+        .microservice-card .endpoint-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .microservice-card .endpoint-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .microservice-card .endpoint-list li:last-child {
+            border-bottom: none;
+        }
+
+        .endpoint-method {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            flex: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* DER Section */
+        .der-placeholder {
+            text-align: center;
+            padding: 3rem 2rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .der-placeholder i {
+            font-size: 4rem;
+            color: var(--gray-400);
+            margin-bottom: 1.5rem;
+        }
+
+        .der-placeholder h3 {
+            color: var(--gray-700);
+            margin-bottom: 1rem;
+        }
+
+        .der-placeholder p {
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .img-100 {
+            width: 100%;
+            height: 100%;
+            
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-book"></i>
+                <h1>Documentación del Sistema</h1>
+            </div>
+            <nav>
+                <a onclick="showSection('reglas')" class="active-nav">
+                    <i class="fas fa-calculator"></i>
+                    Reglas de Tarifa
+                </a>
+                <a onclick="showSection('c4')">
+                    <i class="fas fa-sitemap"></i>
+                    Modelo C4
+                </a>
+                <a onclick="showSection('der')">
+                    <i class="fas fa-project-diagram"></i>
+                    DER
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Reglas de Tarifa Section -->
+        <div id="reglas" class="section active">
+            <div class="section-header">
+                <h2><i class="fas fa-calculator"></i> Reglas de Cálculo de Tarifas</h2>
+                <p>Fórmulas y componentes para calcular los costos de transporte en el sistema</p>
+            </div>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-calculator"></i>
+                        <h3>Resumen General del Cálculo</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>El costo total de la solicitud se obtiene sumando los cuatro componentes principales.</p>
+                        <code>
+                            Costo Total =<br>
+                            &nbsp;&nbsp;Costo Gestión<br>
+                            &nbsp;+ Costo Camión<br>
+                            &nbsp;+ Costo Combustible<br>
+                            &nbsp;+ Costo Estadía
+                        </code>
+                        <p><strong>Aplicación:</strong> Es la suma final utilizada para determinar el monto total que el cliente debe pagar.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <h3>Costo de Gestión</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Cargo fijo aplicado por cada tramo de la ruta.</p>
+                        <code>Costo Gestión = cantidad_tramos × costo_gestion_por_tramo</code>
+                    </div>
+                    <div class="card-footer">
+                        <span class="entity-tag">Ruta, Tarifa</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-truck"></i>
+                        <h3>Costo del Camión</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Costo basado en distancia y costo por km.</p>
+                        <code>Costo Camión = SUM(distancia_km × costo_por_km_camion)</code>
+                    </div>
+                    <div class="card-footer">
+                        <span class="entity-tag">Tramo, Camión</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-gas-pump"></i>
+                        <h3>Costo de Combustible</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Basado en consumo real por tramo.</p>
+                        <code>Costo Combustible = SUM(distancia_km × (consumo_L_100km / 100) × precio_combustible)</code>
+                    </div>
+                    <div class="card-footer">
+                        <span class="entity-tag">Tramo, Camión, Tarifa</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-hotel"></i>
+                        <h3>Costo de Estadía</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Costo adicional por estadías en depósitos.</p>
+                        <code>Costo Estadía = SUM(costo_estadia_por_tramo)</code>
+                    </div>
+                    <div class="card-footer">
+                        <span class="entity-tag">Tramo/Depósito</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modelo C4 Section -->
+        <div id="c4" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-sitemap"></i> Modelo C4</h2>
+                <p>Arquitectura del sistema y descripción de microservicios</p>
+                <img src="img/image-osrm.png" alt="" class="img-100">
+            </div>
+
+            <div class="microservice-card">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-users"></i>
+                        <h3>Microservicio Clientes</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Gestiona clientes e integra con <strong>Keycloak</strong> para registro seguro.</p>
+                        
+                        <h4>Endpoints importantes:</h4>
+                        <ul class="endpoint-list">
+                            <li>
+                                <span class="endpoint-method">POST</span>
+                                <span class="endpoint-path">/clientes</span>
+                                <span>crear cliente y registrarlo en Keycloak</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">GET</span>
+                                <span class="endpoint-path">/clientes</span>
+                                <span>obtener todos los clientes</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">GET</span>
+                                <span class="endpoint-path">/clientes/{keycloackId}</span>
+                                <span>obtener información del cliente</span>
+                            </li>
+                        </ul>
+                        
+                        <a class="btn-documentacion" href="http://localhost:8080/clientes-service/swagger-ui/index.html#/" target="_blank" rel="noopener">
+                            <i class="fas fa-external-link-alt"></i>
+                            Ver docs - Clientes
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="microservice-card">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>Microservicio Solicitudes y Contenedores</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Administra solicitudes de transporte, contenedores, estados y rutas tentativas vía los microservicios de logistica y routing (OSRM).</p>
+                        
+                        <h4>Endpoints importantes:</h4>
+                        <ul class="endpoint-list">
+                            <li>
+                                <span class="endpoint-method">POST</span>
+                                <span class="endpoint-path">/solicitudes</span>
+                                <span>crear solicitud (cliente)</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">POST</span>
+                                <span class="endpoint-path">/solicitudes/completa</span>
+                                <span>crear solicitud y crear usuario y contenedor (admin)</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">PATCH</span>
+                                <span class="endpoint-path">/solicitudes/{id}/asignar-ruta</span>
+                                <span>asignar ruta específica</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">PATCH</span>
+                                <span class="endpoint-path">/solicitudes/{id}/calcular-costos-estimados</span>
+                                <span>calcula costos estimados para una solicitud indicada</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">PATCH</span>
+                                <span class="endpoint-path">/solicitudes/{id}/calcular-costos-totales</span>
+                                <span>calcula costos estimados para una solicitud indicada</span>
+                            </li>
+                            <li>
+                                <span class="endpoint-method">GET</span>
+                                <span class="endpoint-path">/solicitudes/{id}/rutas-tentativas</span>
+                                <span>rutas tentativas</span>
+                            </li>
+                        </ul>
+                        
+                        <a class="btn-documentacion" href="http://localhost:8080/solicitudes-service/swagger-ui/index.html#/" target="_blank" rel="noopener">
+                            <i class="fas fa-external-link-alt"></i>
+                            Ver docs - Solicitudes
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="microservice-card">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-route"></i>
+                        <h3>Microservicio Logística</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Gestiona camiones, depósitos, rutas, tramos, tarifas y cálculo de costos operativos. Se comunica con routing-service (OSRM) para el calculo de costos estimados, totales, y calcular distancias.</p>
+                        
+                        <h4>Endpoints importantes:</h4>
+                        <ul class="endpoint-list">
+                            <li>
+                                <span class="endpoint-method">PATCH</span>
+                                <span class="endpoint-path">/tramos/{id}/asignar-camion/{camionId}</span>
+                                <span>asignar camion a un tramo específica</span>
+                            </li>
+                        </ul>
+                        
+                        <a class="btn-documentacion" href="http://localhost:8080/logistica-service/swagger-ui/index.html#/" target="_blank" rel="noopener">
+                            <i class="fas fa-external-link-alt"></i>
+                            Ver docs - Logística
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="microservice-card">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-door-open"></i>
+                        <h3>Microservicio Gateway</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Actúa como puerta de entrada única. Aplica seguridad, routing, y filtra tráfico hacia los demás microservicios. Responsable del flujo de OAuth2/OpenID con <strong>Keycloak</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="microservice-card">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-directions"></i>
+                        <h3>Routing Service</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Microservicio especializado en obtener distancias reales mediante <strong>OSRM (Open Source Routing Machine)</strong> usando latitudes y longitudes. Retorna rutas optimizadas con tiempos y distancias precisas que luego son utilizadas por Logística.</p>
+                        
+                        <h4>Endpoints importantes:</h4>
+                        <ul class="endpoint-list">
+                            <li>
+                                <span class="endpoint-method">GET</span>
+                                <span class="endpoint-path">/calcular-ruta</span>
+                                <span>obtiene mediante request params, latitudes y longitudes de origen y destino y calcula la distancia entre ambos puntos</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="microservice-card">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-key"></i>
+                        <h3>Keycloak Identity Provider</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Servicio externo de autenticación centralizado. Maneja login, tokens, usuarios y roles. Provee JWT para seguridad del ecosistema.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DER Section -->
+        <div id="der" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-project-diagram"></i> Diagrama Entidad-Relación (DER)</h2>
+                <p>Estructura de datos y relaciones del sistema</p>
+                <img src="img/image.png" alt="" class="img-100">
+            </div>
+            
+            <div class="der-placeholder">
+                <i class="fas fa-database"></i>
+                <h3>Diagrama Entidad-Relación</h3>
+                <p>El diagrama muestra las relaciones entre las entidades principales del sistema de gestión de transporte.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(id) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(id).classList.add('active');
+            
+            // Update active nav
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active-nav');
+            });
+            
+            // Find and activate the corresponding nav link
+            document.querySelectorAll('nav a').forEach(link => {
+                if (link.getAttribute('onclick').includes(id)) {
+                    link.classList.add('active-nav');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
